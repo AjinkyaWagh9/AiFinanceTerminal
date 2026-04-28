@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# uv
+.uv-cache/
+
+# Local data + secrets
+*.duckdb
+*.duckdb.wal
+.env
+.env.local
+finterminal/data/*.duckdb
+finterminal/logs/*.log
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
