@@ -87,3 +87,25 @@ Five additional agents on top of Phase 2.5's 13. These are the moat — capabili
 Plus the **Variant-Perception Checker** added to the Critic agent — flags non-variant analyses in panel headers.
 
 **Phase 3 total: 18 agents** (17 if Sentiment off).
+
+### After 4a (2026-04-28) — actual `/analyze` flow
+
+```
+/analyze TICKER [--fresh]
+  → result-cache check (5-min TTL)        ← skip everything if hit
+  → Data agent (deterministic, parallel)  ← no LLM
+  → Analyst agent (LLM, analyst.md)       ← system prompt cached on Anthropic
+  → Critic agent (LLM, critic.md)         ← retry-then-degrade; max 500 tokens
+  → assemble + persist (analyses + critiques rows)
+  → render panel (analyst sections + critic block; degraded badge if Critic failed)
+```
+
+Files:
+- `agents/base.py` — Agent protocol + Registry
+- `agents/data.py` — deterministic fetch + dossier
+- `agents/analyst.py` — LLM, parses 7 sections (renamed from old `supervisor.py`)
+- `agents/critic.py` — LLM, parses verdict
+- `agents/analyze_flow.py` — orchestrator
+- `agents/_dossier.py` — compact source builder for Critic
+
+See [[ADR-013 Hand-rolled Async over CrewAI for Phase 2]] for framework rationale.

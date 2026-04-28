@@ -36,6 +36,7 @@
 | [[02 - Decisions/ADR-010 Generic OpenAI-Compat Provider Class]] | One class, three aliases (`openai_compat`, `openai`, `xai`); per-model key/URL config |
 | [[02 - Decisions/ADR-011 3-Layer Macro Heatmap and Synthesis Layer]] | 3-layer heatmap + Banking Health depth + 5-component Synthesis Layer (Regime/Scenario/Weighter/Calibration/Auditor) — the actual edge over JP Morgan |
 | [[02 - Decisions/ADR-012 Custom Indian Data Layer]] | Build dedicated `data/india/` (Screener.in + Moneycontrol/Mint/ET RSS) instead of US-centric global APIs. Implemented commit `1232297` |
+| [[02 - Decisions/ADR-013 Hand-rolled Async over CrewAI for Phase 2]] | Drop CrewAI from Phase 2's `/analyze` flow. Use hand-rolled async orchestration with Agent Protocol + AgentRegistry. Phase 3 LangGraph migration unchanged. |
 
 ---
 
@@ -80,6 +81,7 @@
 | 2026-04-28 | [[05 - Build Log/2026-04-28 - Strategy Review and Synthesis Layer]] — input.md feedback integrated; PLAN §6.6 added; ADR-011; analyst.md prompt v2 with 6-factor hierarchy + Variant Perception + Conviction tiering |
 | 2026-04-28 | [[05 - Build Log/2026-04-28 - OpenBB Keys Wired and Ticker Prefix]] — Benzinga US news live (20 hdlns/call); FMP/FRED/Tiingo/AV probed; `US:AAPL` `NSE:HDFC` prefix syntax; Indian gap requires Phase 2.5.B not API keys |
 | 2026-04-28 | [[05 - Build Log/2026-04-28 - Indian Data Layer Shipped]] — Screener.in fundamentals + Moneycontrol/Mint/ET RSS news + Finnhub client. /analyze RELIANCE now cites real EPS, D/E, revenue + today's broker target hike. **Phase 1 genuinely usable for Indian research.** |
+| 2026-04-28 | [[05 - Build Log/2026-04-28 — Multi-Agent Scaffold (4a)]] — Data → Analyst → Critic async flow; result cache (5m); prompt caching via Anthropic; Critic with degraded badge on failure |
 
 ---
 

@@ -20,6 +20,21 @@ The terminal stops being a single-shot REPL and becomes a coordinated agent syst
 
 ---
 
+## Status (2026-04-28)
+
+Phase 2 split into independent sub-deliverables for incremental shipping:
+
+| Sub | Name | Status |
+|---|---|---|
+| 4a | Multi-agent scaffold (`/analyze` → Data + Analyst + Critic) | Shipped — see [[ADR-013 Hand-rolled Async over CrewAI for Phase 2]] |
+| 4b | News & Trend agent + `/trends` | Planned (next) |
+| 4c | Watchlist persistence | Already shipped in Phase 1 |
+| 4d | Textual TUI migration | Deferred |
+
+Framework note: per ADR-013, 4a uses hand-rolled async over the existing `router.for_agent()` interface, not CrewAI. ADR-002's Phase 3 LangGraph migration plan is unchanged.
+
+---
+
 ## New commands
 
 | Command | Description |
