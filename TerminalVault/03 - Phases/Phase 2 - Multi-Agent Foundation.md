@@ -20,18 +20,31 @@ The terminal stops being a single-shot REPL and becomes a coordinated agent syst
 
 ---
 
-## Status (2026-04-28)
+## Status (2026-04-29)
 
 Phase 2 split into independent sub-deliverables for incremental shipping:
 
 | Sub | Name | Status |
 |---|---|---|
-| 4a | Multi-agent scaffold (`/analyze` → Data + Analyst + Critic) | Shipped — see [[ADR-013 Hand-rolled Async over CrewAI for Phase 2]] |
+| 4a | Multi-agent scaffold (`/analyze` → Data + Analyst + Critic) | **Smoke green 2026-04-29** — see [[05 - Build Log/2026-04-29 — 4a Scaffold Smoke + Post-Smoke Fixes]] |
 | 4b | News & Trend agent + `/trends` | Planned (next) |
 | 4c | Watchlist persistence | Already shipped in Phase 1 |
 | 4d | Textual TUI migration | Deferred |
 
 Framework note: per ADR-013, 4a uses hand-rolled async over the existing `router.for_agent()` interface, not CrewAI. ADR-002's Phase 3 LangGraph migration plan is unchanged.
+
+---
+
+## Phase 2 backlog (from 4a smoke, 2026-04-29)
+
+Follow-ups and qualitative observations to address in next 4a/4b iterations:
+
+- [ ] **FU-1 — Cache-hit path not smoke-tested.** The two `/analyze RELIANCE` runs were 24 min apart (beyond 300s TTL); cache-hit code path was never exercised end-to-end. Retest: run back-to-back within 5 min. No code change.
+- [ ] **FU-2 — Analyst↔dossier source-tag convention drift.** Dossier uses `[FUND-REV]` / `[QUOTE]` / `[NEWS-1]` tags; Analyst uses `[src: fundamentals.revenue_ttm]` / `[src: quote.last_price]` and hallucinates tags not in dossier. Critic's `VERIFY` can't cross-reference reliably. Fix: align `prompts/analyst.md` to use dossier tags.
+- [ ] **Critic tone too harsh** — "high severity" used on stylistic critiques. Soften Critic system prompt (`prompts/critic.md`).
+- [ ] **Data context too shallow** — Missing: cash-flow (op CF, FCF, capex), net debt, segmental P&L (Jio/Retail/O2C for Reliance), forward EPS consensus, peer multiples, historical PE/ROE band. Data agent enrichment required.
+- [ ] **Critic missed conglomerate framing** — consolidated PE/ROE insufficient for diversified targets; need segmental context. Prompt-side fix for Critic system prompt.
+- [ ] **ROE/ROCE = 7.9% for Reliance** — possibly correct for current consolidated FY; Data agent spot-check against independent source recommended before trusting Analyst on this metric.
 
 ---
 

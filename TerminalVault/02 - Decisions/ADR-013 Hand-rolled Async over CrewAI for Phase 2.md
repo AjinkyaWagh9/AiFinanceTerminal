@@ -51,8 +51,18 @@ If 4b News & Trend's parallel feed-fetch + dedupe pipeline turns out to want Cre
 - We diverge from ADR-002's documented framework choice mid-stream — ADR-013 is its supersession record for clarity.
 - If Phase 2.5 grows graph-shaped flows earlier than expected, we either roll our own state machine or pull in LangGraph one phase early.
 
+## Status update — 2026-04-29
+
+- **Shipped 2026-04-29.** Smoke green: `/analyze RELIANCE` and `/analyze RELIANCE --fresh` rendered full 7-section panel + Critic block against live OpenAI (`gpt-5-mini`).
+- **77/77 tests passing** (76 before smoke; +1 regression test for `registry=None` default path).
+- Three post-smoke fixes committed: import path correction in `analyze_flow.py:138`, ruff unused-import cleanup, Critic model swapped to `gpt-5-mini` (Anthropic eager-init incompatibility).
+- Follow-ups tracked: **FU-1** (cache-hit path not smoke-tested), **FU-2** (Analyst↔dossier source-tag convention drift). See [[05 - Build Log/2026-04-29 — 4a Scaffold Smoke + Post-Smoke Fixes]].
+
+---
+
 ## Cross-links
 - Supersedes: parts of [[ADR-002 CrewAI then LangGraph]] (Phase 2 framework only — Phase 3 plan stands)
 - Implementation spec: `docs/superpowers/specs/2026-04-28-multi-agent-scaffold-4a-design.md`
 - Implementation plan: `docs/superpowers/plans/2026-04-28-multi-agent-scaffold-4a.md`
 - Brainstorm: 2026-04-28 (4a path through Phase 2 decomposition)
+- Smoke log: [[05 - Build Log/2026-04-29 — 4a Scaffold Smoke + Post-Smoke Fixes]]

@@ -62,6 +62,8 @@
 | [[04 - Code Map/ui — Rich-Textual]] | `src/finterminal/ui/panels.py` — all renderers + context helpers |
 | [[04 - Code Map/commands]] | `src/finterminal/commands.py` — REPL dispatcher |
 | [[04 - Code Map/agents — supervisor]] | `src/finterminal/agents/supervisor.py` — Phase 1 LLM orchestration |
+| [[04 - Code Map/agents — analyze_flow]] | `src/finterminal/agents/analyze_flow.py` — Phase 2 Data→Analyst→Critic orchestrator |
+| [[04 - Code Map/config — agents.yaml]] | `config/agents.yaml` — agent-to-model mapping; Critic now defaults to `gpt-5-mini` |
 | [[04 - Code Map/prompts]] | `src/finterminal/prompts/` |
 | [[04 - Code Map/openai-compat-provider]] | `src/finterminal/llm/providers/openai_compat.py` |
 | [[04 - Code Map/prompts]] | `src/finterminal/prompts/` — `analyst.md` v2, `critic.md`, `supervisor.md` |
@@ -82,6 +84,7 @@
 | 2026-04-28 | [[05 - Build Log/2026-04-28 - OpenBB Keys Wired and Ticker Prefix]] — Benzinga US news live (20 hdlns/call); FMP/FRED/Tiingo/AV probed; `US:AAPL` `NSE:HDFC` prefix syntax; Indian gap requires Phase 2.5.B not API keys |
 | 2026-04-28 | [[05 - Build Log/2026-04-28 - Indian Data Layer Shipped]] — Screener.in fundamentals + Moneycontrol/Mint/ET RSS news + Finnhub client. /analyze RELIANCE now cites real EPS, D/E, revenue + today's broker target hike. **Phase 1 genuinely usable for Indian research.** |
 | 2026-04-28 | [[05 - Build Log/2026-04-28 — Multi-Agent Scaffold (4a)]] — Data → Analyst → Critic async flow; result cache (5m); prompt caching via Anthropic; Critic with degraded badge on failure |
+| 2026-04-29 | [[05 - Build Log/2026-04-29 — 4a Scaffold Smoke + Post-Smoke Fixes]] — Smoke green; 3 post-smoke commits; FU-1 + FU-2 + 4 qualitative items tracked as Phase 2 backlog |
 
 ---
 
