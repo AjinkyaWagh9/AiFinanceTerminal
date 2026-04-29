@@ -10,11 +10,11 @@ These are the system prompts loaded by agents. Markdown source-of-truth. Edit in
 
 ## File inventory
 
-| File | Loaded by | Phase | Lines |
-|---|---|---|---:|
-| `analyst.md` | Supervisor agent (`agents/supervisor.py:_load_system_prompt`) | 1 (live) | ~70 |
-| `critic.md` | Critic agent (Phase 2) | 2 | ~30 |
-| `supervisor.md` | Multi-agent supervisor (Phase 2 dispatcher prompt) | 2 | ~25 |
+| File | Loaded by | Phase | Lines | Last major change |
+|---|---|---|---:|---|
+| `analyst.md` | Supervisor agent (`agents/supervisor.py:_load_system_prompt`) | 1 (live) | ~90 | 2026-04-29 commit `3244943` — tag whitelist + conglomerate guard |
+| `critic.md` | Critic agent (Phase 2) | 2 | ~45 | 2026-04-29 commit `7889024` — severity rubric + tone reframe |
+| `supervisor.md` | Multi-agent supervisor (Phase 2 dispatcher prompt) | 2 | ~25 | — |
 
 ---
 
@@ -47,21 +47,42 @@ These are the system prompts loaded by agents. Markdown source-of-truth. Edit in
 5. **Rich Dad lens** — assets vs liabilities; flag multiple-expansion vs earnings-growth dependencies
 6. **Stoic uncertainty** — explicit assumptions; calibrate (0.9 should be rare; default 0.4–0.7)
 7. **Munger inversion** — articulate how the thesis fails
+8. **Conglomerate guard (added 2026-04-29, commit `3244943`)** — for multi-segment Indian conglomerates (Reliance, ITC, L&T, Adani Enterprises, Bajaj Finserv, Tata, Mahindra, Aditya Birla), forces explicit assumption-disclosure listing all segments by name, caps Confidence at 0.55, and adds segmental P&L trigger to "What Would Change My Mind"
+
+**Source tag whitelist (HARD CONSTRAINT, added 2026-04-29):** 12 valid tags enumerated in the prompt. Analyst must use only these or cite "data unavailable in SOURCES". Fabricating tags outside the whitelist is a prompt-level violation.
+
+Valid tags:
+- `[src: quote.last_price]`, `[src: quote.volume]`, `[src: quote.market_cap]`
+- `[src: fundamentals.pe_ttm]`, `[src: fundamentals.pb]`, `[src: fundamentals.roe]`, `[src: fundamentals.revenue_ttm]`, `[src: fundamentals.net_income_ttm]`, `[src: fundamentals.debt_equity]`
+- `[src: news[0]]` … `[src: news[N]]`
+- `[src: macro.*]` (any macro sub-field)
+
+Tag convention decision: [[02 - Decisions/ADR-014 Single Tag Convention dotted-path]]
 
 ---
 
 ## `critic.md` — Phase 2
 
-Adversarial review prompt. Runs on every `/analyze` output once the Critic agent is wired (Phase 2). Flags:
+Senior peer-reviewer prompt (reframed from adversarial, 2026-04-29 commit `7889024`). Runs on every `/analyze` output. Flags:
 - Unsourced numeric claims
 - Missing context that would have changed the conclusion (no pledge check, no macro headwind, etc.)
 - Whether the bear case is crisp + falsifiable, or boilerplate
 - Confidence calibration (>0.7 had better be earned; <0.4 means "did the analysis even reach a conclusion")
 
-**Output:**
+**Severity rubric (defined 2026-04-29):**
+
+| Severity | Criteria |
+|---|---|
+| `HIGH` | Fabricated tag (not in analyst whitelist) OR claim directly contradicts SOURCES |
+| `MEDIUM` | Unsourced AND material to bull/bear conclusion |
+| `LOW` | Unsourced + stylistic OR vague + non-load-bearing |
+
+Calibration nudge: ≤2 HIGH, ≤4 MEDIUM expected per run.
+
+**Output format (updated 2026-04-29):**
 ```
 ## Issues
-- <severity: high|medium|low>
+- [HIGH]/[MEDIUM]/[LOW] <issue description>
 ## Missing Data
 - <what was not consulted>
 ## Confidence Adjustment
@@ -70,7 +91,16 @@ Adversarial review prompt. Runs on every `/analyze` output once the Critic agent
 ACCEPT | REVISE | REJECT
 ```
 
+**Verdict thresholds:**
+- `ACCEPT` — no HIGH issues
+- `REVISE` — ≥1 MEDIUM or HIGH issue
+- `REJECT` — multiple HIGH issues OR >30% citation failures
+
+Note: Critic parser reads sections, not severity tokens — `[HIGH]`/`[MEDIUM]`/`[LOW]` prefix is for panel rendering only (bracketed prefix does not affect parser logic).
+
 If Verdict = REVISE / REJECT, Phase 3 LangGraph migration ([[ADR-002 CrewAI then LangGraph]]) will route back to Data Agent for re-fetch before returning to user.
+
+**Smoke result (2026-04-29, `/analyze ITC`):** 0 HIGH + 3 MEDIUM + 3 LOW. No tag-format complaints — issues are substance-based only.
 
 ---
 
