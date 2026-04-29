@@ -1,6 +1,6 @@
 # Code Map — data/ (OpenBB + DuckDB + India layer)
 
-> Back to [[Index]] | See also [[data — india module]] · [[01 - Architecture/Storage]] · [[01 - Architecture/Data Sources]] · [[ADR-003 DuckDB + SQLite + ChromaDB local-only]] · [[ADR-012 Custom Indian Data Layer]]
+> Back to [[Index]] | See also [[data — india module]] · [[data — india — nse_quote]] · [[01 - Architecture/Storage]] · [[01 - Architecture/Data Sources]] · [[ADR-003 DuckDB + SQLite + ChromaDB local-only]] · [[ADR-012 Custom Indian Data Layer]] · [[ADR-015 Provider Chain Pattern for Fallthrough]]
 
 **Directory:** `src/finterminal/data/`
 
@@ -10,7 +10,7 @@
 
 | File | Key exports | Role |
 |---|---|---|
-| `openbb_client.py` | `fetch_quote`, `fetch_fundamentals`, `fetch_news`, `_is_indian_ticker` | Provider router; .NS/.BO route through India-first chains |
+| `openbb_client.py` | `fetch_quote`, `fetch_fundamentals`, `fetch_news`, `_is_indian_ticker`, `_fetch_via_yfinance` | Provider router; .NS/.BO route through India-first chains; multi-provider fallthrough chain (Q-5) |
 | `duckdb_store.py` | `get_conn`, `upsert_quote`, `latest_quote`, `upsert_fundamentals`, `upsert_news`, watchlist CRUD, `record_analysis` | All DuckDB read/write operations |
 | `finnhub_client.py` | `is_available`, `fetch_quote`, `fetch_news` | Direct HTTP (OpenBB ships no extension); dormant unless `FINNHUB_API_KEY` set |
 | `nse.py` | `normalize_ticker` | Ticker normalization with `EXCHANGE:SYMBOL` prefix syntax (NSE/BSE/US) |
@@ -21,22 +21,31 @@
 
 ## `openbb_client.py` — key functions
 
-### `fetch_quote(ticker: str) -> dict`
-
-**Important: yfinance Indian quote endpoint fallback.**
-
-`obb.equity.price.quote()` (yfinance backend) intermittently fails for `.NS` / `.BO` tickers due to Yahoo's cookie/crumb authentication. When it fails, `fetch_quote` falls back to:
+### Provider chains (Q-5, commit `bc269cb`)
 
 ```python
-obb.equity.price.historical(symbol=ticker, interval="1d", limit=2)
+_QUOTE_PROVIDERS = ["yfinance", "nse"]      # openbb_client.py:29
+_FUNDAMENTAL_PROVIDERS = ["yfinance"]
+_NEWS_PROVIDERS = ["benzinga", "yfinance"]
 ```
 
-It synthesizes a quote from the most recent bar:
-- `last_price` ← `close`
-- `change_pct` ← calculated from the bar's return
-- `volume` ← bar volume
+The `nse` provider fires only for `.NS` / `.BO` tickers (`_is_indian_ticker` gate). See [[ADR-015 Provider Chain Pattern for Fallthrough]] for the design rationale.
 
-Live validation: RELIANCE.NS returned `last_price=1385.10` via this fallback (commit `cf79139`).
+### `fetch_quote(ticker: str) -> dict`
+
+Iterates `_QUOTE_PROVIDERS` in order; returns on first success; raises `RuntimeError` (with last error) only when all providers fail. Propagates the LAST error, not the first — see ADR-015.
+
+**Provider 1 — yfinance (via `_fetch_via_yfinance`, line :50):**
+- Tries `obb.equity.price.quote()` first.
+- On empty/failure, falls back to `obb.equity.price.historical()` and synthesizes a quote from last two closes.
+- Raises `RuntimeError` on all-paths-failed.
+
+**Provider 2 — nse (`.NS` / `.BO` only, line :133–143):**
+- Calls `india.nse_quote.fetch_nse_quote(ticker)` (lazy import).
+- Two-step session warmup; browser-like UA required.
+- See [[data — india — nse_quote]] for full field mapping.
+
+Live validation (Q-5): yfinance timed out on `/analyze ITC` (2026-04-29); NSE fallthrough returned correct ITC quote numbers; analysis completed normally.
 
 ### `fetch_fundamentals(ticker: str) -> dict`
 

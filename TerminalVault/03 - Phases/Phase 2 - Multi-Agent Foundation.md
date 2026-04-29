@@ -2,7 +2,7 @@
 
 > Back to [[Index]] | See also [[03 - Phases/Phase 1 - MVP]] · [[01 - Architecture/Agent System]] · [[ADR-002 CrewAI then LangGraph]]
 
-**Status:** Planned
+**Status:** In Progress
 **Target weeks:** 3–4
 **Source:** [PLAN.md §6 Phase 2](../docs/PLAN.md)
 
@@ -26,7 +26,7 @@ Phase 2 split into independent sub-deliverables for incremental shipping:
 
 | Sub | Name | Status |
 |---|---|---|
-| 4a | Multi-agent scaffold (`/analyze` → Data + Analyst + Critic) | **Smoke green 2026-04-29** — see [[05 - Build Log/2026-04-29 — 4a Scaffold Smoke + Post-Smoke Fixes]] |
+| 4a | Multi-agent scaffold (`/analyze` → Data + Analyst + Critic) | **SHIPPED + LIVE-VERIFIED 2026-04-29** — smoke green [[05 - Build Log/2026-04-29 — 4a Scaffold Smoke + Post-Smoke Fixes]]; Ollama provider live-verified against qwen3.5:9b [[05 - Build Log/2026-04-29 — Sprint A Live + B-1 Hardening]] |
 | 4b | News & Trend agent + `/trends` | Planned (next) |
 | 4c | Watchlist persistence | Already shipped in Phase 1 |
 | 4d | Textual TUI migration | Deferred |
@@ -45,8 +45,9 @@ Follow-ups and qualitative observations to address in next 4a/4b iterations:
 - [ ] **Data context too shallow** — Missing: cash-flow (op CF, FCF, capex), net debt, segmental P&L (Jio/Retail/O2C for Reliance), forward EPS consensus, peer multiples, historical PE/ROE band. Data agent enrichment required.
 - [x] **Q-2 — Critic missed conglomerate framing** — consolidated PE/ROE insufficient for diversified targets; need segmental context. Prompt-side fix for Critic system prompt. — **Done 2026-04-29, commit `3244943`; conglomerate guard (principle #8) added to `prompts/analyst.md`; by-name list (Reliance, ITC, L&T, Adani Enterprises, Bajaj Finserv, Tata, Mahindra, Aditya Birla); Confidence capped at 0.55; ITC smoke confirmed**
 - [ ] **ROE/ROCE = 7.9% for Reliance** — possibly correct for current consolidated FY; Data agent spot-check against independent source recommended before trusting Analyst on this metric.
-- [ ] **Q-5 — yfinance provider fallthrough hardening.** `yfinance` frequently returns "possibly delisted" / `EmptyDataError` for valid Indian symbols (e.g., `RELIANCE.NS`) when throttled. Quote-provider chain bails entirely instead of falling through to alternate providers. Fix: graceful provider fallthrough on yfinance throttle. Phase-2 data-layer hardening.
-- [ ] **Q-6 — Rich panel silently strips `[src: ...]` tags (UI rendering bug, pre-existing).** Rich interprets `[src: quote.last_price]`-style bracketed dotted text as failed style markup and strips it from the rendered `analysis_panel`. Tags are correctly emitted by analyst (Critic verifies them in raw text). Fix: escape brackets before passing to Rich's `Panel`/`Text` constructors, or use `Text(..., markup=False)`. Sized: 30–60 min. Cosmetic only; not blocking.
+- [x] **Q-5 — yfinance provider fallthrough hardening.** `yfinance` frequently returns "possibly delisted" / `EmptyDataError` for valid Indian symbols (e.g., `RELIANCE.NS`) when throttled. Quote-provider chain bails entirely instead of falling through to alternate providers. Fix: graceful provider fallthrough on yfinance throttle. Phase-2 data-layer hardening. — **Done 2026-04-29, commits `cc16a01` `bc269cb`; new `data/india/nse_quote.py`; `_QUOTE_PROVIDERS = ["yfinance", "nse"]`; live-verified on `/analyze ITC` (yfinance timed out, NSE chain held); see [[05 - Build Log/2026-04-29 — Sprint A Live + B-1 Hardening]]**
+- [x] **Q-6 — Rich panel silently strips `[src: ...]` tags (UI rendering bug, pre-existing).** Rich interprets `[src: quote.last_price]`-style bracketed dotted text as failed style markup and strips it from the rendered `analysis_panel`. Tags are correctly emitted by analyst (Critic verifies them in raw text). Fix: escape brackets before passing to Rich's `Panel`/`Text` constructors, or use `Text(..., markup=False)`. Sized: 30–60 min. Cosmetic only; not blocking. — **Done 2026-04-29, commit `0b5e723`; `_escape_markup()` in `ui/panels.py:13`; applied to 5 LLM fields; live-verified on `/analyze ITC` (every `[src: ...]` tag renders literally); see [[05 - Build Log/2026-04-29 — Sprint A Live + B-1 Hardening]]**
+- [ ] **Q-7 — Analyst confidence-cap wording ambiguous.** `prompts/analyst.md` says "Cap your `Confidence` at 0.55" — model correctly chose 0.50 (ceiling semantics) but Critic flagged the phrasing as a small inconsistency. Fix: change to "Confidence may not exceed 0.55". Small prompt tweak; not blocking; deferred to Phase 2.5 prompt-tuning batch. Surfaced 2026-04-29 by ITC Critic run; see [[05 - Build Log/2026-04-29 — Sprint A Live + B-1 Hardening]]
 
 ---
 

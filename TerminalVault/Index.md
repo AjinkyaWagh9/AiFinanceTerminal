@@ -37,6 +37,8 @@
 | [[02 - Decisions/ADR-011 3-Layer Macro Heatmap and Synthesis Layer]] | 3-layer heatmap + Banking Health depth + 5-component Synthesis Layer (Regime/Scenario/Weighter/Calibration/Auditor) — the actual edge over JP Morgan |
 | [[02 - Decisions/ADR-012 Custom Indian Data Layer]] | Build dedicated `data/india/` (Screener.in + Moneycontrol/Mint/ET RSS) instead of US-centric global APIs. Implemented commit `1232297` |
 | [[02 - Decisions/ADR-013 Hand-rolled Async over CrewAI for Phase 2]] | Drop CrewAI from Phase 2's `/analyze` flow. Use hand-rolled async orchestration with Agent Protocol + AgentRegistry. Phase 3 LangGraph migration unchanged. |
+| [[02 - Decisions/ADR-014 Single Tag Convention dotted-path]] | `[src: dotted.path]` is the one canonical source-tag vocabulary; short-codes retired |
+| [[02 - Decisions/ADR-015 Provider Chain Pattern for Fallthrough]] | Ordered `_QUOTE_PROVIDERS` list with silent fallthrough; NSE added as yfinance fallback for Indian tickers |
 
 ---
 
@@ -45,7 +47,7 @@
 | Phase | Status | Key milestone |
 |---|---|---|
 | [[03 - Phases/Phase 1 - MVP]] | **Complete** — `/analyze` running live on gpt-5-mini | 5 commands wired; 12 tests pass; bull/bear with sourced citations confirmed on RELIANCE.NS |
-| [[03 - Phases/Phase 2 - Multi-agent]] | Planned | CrewAI, News & Trend, Critic, TUI upgrade |
+| [[03 - Phases/Phase 2 - Multi-Agent Foundation]] | **In Progress** — 4a SHIPPED + Ollama live-verified; Q-5 + Q-6 done; Q-7 backlog | Data→Analyst→Critic; NSE fallthrough; markup escape |
 | [[03 - Phases/Phase 2.5 - Analyst-Grade]] | Planned | Transcripts, Consensus, Ownership, Quality, Comps, Macro |
 | [[03 - Phases/Phase 3 - US + Routing]] | Planned | LangGraph migration, US tickers, probabilistic bull/bear |
 | [[03 - Phases/Phase 4 - Polish]] | Planned | Reports, alerts, confidence calibration |
@@ -57,8 +59,9 @@
 | Module | Maps to |
 |---|---|
 | [[04 - Code Map/llm — abstraction layer]] | `src/finterminal/llm/` |
-| [[04 - Code Map/data — OpenBB + DuckDB]] | `src/finterminal/data/` (the wrapper that routes between providers) |
+| [[04 - Code Map/data — OpenBB + DuckDB]] | `src/finterminal/data/` (the wrapper that routes between providers; multi-provider fallthrough chain) |
 | [[04 - Code Map/data — india module]] | `src/finterminal/data/india/` — Screener.in + RSS aggregator |
+| [[04 - Code Map/data — india — nse_quote]] | `src/finterminal/data/india/nse_quote.py` — NSE direct quote API (Q-5 fallback) |
 | [[04 - Code Map/ui — Rich-Textual]] | `src/finterminal/ui/panels.py` — all renderers + context helpers |
 | [[04 - Code Map/commands]] | `src/finterminal/commands.py` — REPL dispatcher |
 | [[04 - Code Map/agents — supervisor]] | `src/finterminal/agents/supervisor.py` — Phase 1 LLM orchestration |
@@ -85,6 +88,8 @@
 | 2026-04-28 | [[05 - Build Log/2026-04-28 - Indian Data Layer Shipped]] — Screener.in fundamentals + Moneycontrol/Mint/ET RSS news + Finnhub client. /analyze RELIANCE now cites real EPS, D/E, revenue + today's broker target hike. **Phase 1 genuinely usable for Indian research.** |
 | 2026-04-28 | [[05 - Build Log/2026-04-28 — Multi-Agent Scaffold (4a)]] — Data → Analyst → Critic async flow; result cache (5m); prompt caching via Anthropic; Critic with degraded badge on failure |
 | 2026-04-29 | [[05 - Build Log/2026-04-29 — 4a Scaffold Smoke + Post-Smoke Fixes]] — Smoke green; 3 post-smoke commits; FU-1 + FU-2 + 4 qualitative items tracked as Phase 2 backlog |
+| 2026-04-29 | [[05 - Build Log/2026-04-29 — C Sprint (FU-2 Q-1 Q-2 Smoke Green)]] — FU-2 + Q-1 + Q-2 prompt sprint; conglomerate guard; severity rubric; 77 → 93 tests |
+| 2026-04-29 | [[05 - Build Log/2026-04-29 — Sprint A Live + B-1 Hardening]] — Sprint A Ollama live-verified (qwen3.5:9b); Q-5 NSE fallthrough + Q-6 markup escape shipped; 104 → 123 tests; Q-7 backlog |
 
 ---
 

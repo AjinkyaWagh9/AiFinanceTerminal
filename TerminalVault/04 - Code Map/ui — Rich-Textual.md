@@ -1,9 +1,23 @@
 # Code Map — ui/panels.py
 
-> Back to [[Index]] | See also [[04 - Code Map/commands]] · [[04 - Code Map/agents — supervisor]]
+> Back to [[Index]] | See also [[04 - Code Map/commands]] · [[04 - Code Map/agents — supervisor]] · [[03 - Phases/Phase 2 - Multi-Agent Foundation]]
 
 **File:** `src/finterminal/ui/panels.py`
 **Role:** All Rich panel and table renderers for the REPL, plus context-block formatters that emit `[src: ...]` tags for the LLM.
+
+---
+
+## `_escape_markup` helper (Q-6, commit `0b5e723`)
+
+| Detail | Value |
+|---|---|
+| Function | `_escape_markup(s: str \| None) -> str` |
+| File:line | `panels.py:13` |
+| What it does | Escapes `[` → `\[` in LLM-generated strings so Rich renders bracketed text literally instead of interpreting it as style markup |
+| Why needed | Rich's `Panel(string)` silently strips unknown `[style]` tokens. The Analyst emits `[src: quote.last_price]` citations; without escaping these vanished from the rendered panel (Q-6 root cause) |
+| Applied to | `variant_perception` (:221), `bull_case` (:229), `bear_case` (:236), `assumptions` (:265), `what_would_change` (:266) |
+| NOT applied to | Critic block — `Text.append()` already treats input as plain text |
+| Live-verified | 2026-04-29 `/analyze ITC` — every `[src: ...]` tag renders literally in the panel |
 
 ---
 

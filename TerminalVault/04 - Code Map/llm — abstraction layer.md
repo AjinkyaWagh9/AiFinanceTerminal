@@ -16,7 +16,7 @@
 | `budget.py` | `CostTracker`, `record()` | Writes to DuckDB `llm_calls` table on every call |
 | `providers/anthropic.py` | `AnthropicProvider` | Wraps Anthropic SDK; handles retry, cost logging |
 | `providers/openai_compat.py` | `OpenAICompatProvider` | Wraps OpenAI SDK; covers OpenAI, xAI, NIM, OpenRouter |
-| `providers/ollama.py` | `OllamaProvider` | Local Ollama (Phase 2 stub; importable but minimal in Phase 1) |
+| `providers/ollama.py` | `OllamaProvider` | Local Ollama — **live-verified 2026-04-29** against qwen3.5:9b on M4 Air |
 | `providers/null.py` | `NullProvider` | No-op; for agents like Calendar that don't call an LLM |
 | `providers/__init__.py` | `PROVIDERS` dict | Maps provider string keys → classes; three aliases for `OpenAICompatProvider` |
 
@@ -92,6 +92,32 @@ PROVIDERS = {
     "null":         NullProvider,
 }
 ```
+
+---
+
+## `OllamaProvider` — live-verification notes (commit `4ea88f9`)
+
+**Status:** Live-verified 2026-04-29 against `qwen3.5:9b` on M4 Air 16 GB.
+
+| Stat | Value |
+|---|---|
+| Cold-start latency | 46 s (first call after `ollama serve`; model load) |
+| Warm latency | ~1–3 s (expected; model already in memory) |
+| Test `max_tokens` floor | 256 minimum for reasoning-tier models |
+| Default `max_tokens` for `/analyze` | 2000 (unchanged; sufficient) |
+
+**Reasoning-tier models (qwen3.x, gpt-5 thinking)** burn internal tokens before producing visible output. Setting `max_tokens=10` returns an empty string because all tokens go to internal thought. The live-smoke test bumped this to 256; the production `/analyze` default of 2000 is sufficient.
+
+**Models registered (commit `4ea88f9`):**
+
+| Model | Size | Role |
+|---|---|---|
+| `qwen3.5:9b` | 6.6 GB | Verified local inference option |
+| `gemma4:e4b` | 9.6 GB | Second mid-tier option (NOT a fast classifier despite "e4b" tag) |
+
+Fast-classifier role (Phase 2.5 Quality / Macro / Calendar / Ownership) has no pulled candidate yet — phi-class or qwen2.5:3b deferred. Cloud agents (Analyst, Critic) keep OpenAI defaults; local routing is opt-in via `agents.yaml`.
+
+See [[05 - Build Log/2026-04-29 — Sprint A Live + B-1 Hardening]] for full verification details.
 
 ---
 
