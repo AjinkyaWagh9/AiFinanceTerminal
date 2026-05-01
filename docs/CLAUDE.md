@@ -8,7 +8,7 @@
 
 ## Vault update protocol (mandatory)
 
-After **any meaningful code or content change**, spawn a Sonnet (or Haiku for tiny updates) subagent via the `Agent` tool to update `TerminalVault/`. The vault is the cross-session memory — if it isn't updated, future sessions will lose context.
+After **any meaningful code or content change**, spawn a Haiku  subagent via the `Agent` tool to update `TerminalVault/`. The vault is the cross-session memory — if it isn't updated, future sessions will lose context.
 
 A "meaningful change" includes:
 - New code modules, functions, or classes

@@ -39,6 +39,9 @@
 | [[02 - Decisions/ADR-013 Hand-rolled Async over CrewAI for Phase 2]] | Drop CrewAI from Phase 2's `/analyze` flow. Use hand-rolled async orchestration with Agent Protocol + AgentRegistry. Phase 3 LangGraph migration unchanged. |
 | [[02 - Decisions/ADR-014 Single Tag Convention dotted-path]] | `[src: dotted.path]` is the one canonical source-tag vocabulary; short-codes retired |
 | [[02 - Decisions/ADR-015 Provider Chain Pattern for Fallthrough]] | Ordered `_QUOTE_PROVIDERS` list with silent fallthrough; NSE added as yfinance fallback for Indian tickers |
+| [[02 - Decisions/ADR-016 — DuckDB vss over ChromaDB]] | DuckDB bundled `vss` extension chosen over ChromaDB for news embeddings — no extra dep, SQL join support, in-process |
+| [[02 - Decisions/ADR-017 — Outcomes Ledger as the System's Moat]] | Per-signal outcomes ledger + 5-engine taxonomy — every signal scored against forward returns vs Nifty 50; sub-project #1 |
+| [[02 - Decisions/ADR-018 — Bhavcopy Market Data as Independent Peer Pipeline]] | NSE Bhavcopy pipeline (`market_data/`) is independent peer; MUST NOT import `outcomes/`; enforced by test |
 
 ---
 
@@ -47,7 +50,7 @@
 | Phase | Status | Key milestone |
 |---|---|---|
 | [[03 - Phases/Phase 1 - MVP]] | **Complete** — `/analyze` running live on gpt-5-mini | 5 commands wired; 12 tests pass; bull/bear with sourced citations confirmed on RELIANCE.NS |
-| [[03 - Phases/Phase 2 - Multi-Agent Foundation]] | **In Progress** — 4a SHIPPED + Ollama live-verified; Q-5 + Q-6 done; Q-7 backlog | Data→Analyst→Critic; NSE fallthrough; markup escape |
+| [[03 - Phases/Phase 2 - Multi-Agent Foundation]] | **In Progress** — 4a SHIPPED; B-2a SHIPPED (173 tests); #1 SHIPPED; #2 SHIPPED; #3 SHIPPED (293 tests); #4 active | Data→Analyst→Critic; news pipeline; trends UI; NSE fallthrough; markup escape; feature store foundation; quality metrics wired |
 | [[03 - Phases/Phase 2.5 - Analyst-Grade]] | Planned | Transcripts, Consensus, Ownership, Quality, Comps, Macro |
 | [[03 - Phases/Phase 3 - US + Routing]] | Planned | LangGraph migration, US tickers, probabilistic bull/bear |
 | [[03 - Phases/Phase 4 - Polish]] | Planned | Reports, alerts, confidence calibration |
@@ -70,6 +73,11 @@
 | [[04 - Code Map/prompts]] | `src/finterminal/prompts/` |
 | [[04 - Code Map/openai-compat-provider]] | `src/finterminal/llm/providers/openai_compat.py` |
 | [[04 - Code Map/prompts]] | `src/finterminal/prompts/` — `analyst.md` v2, `critic.md`, `supervisor.md` |
+| [[04 - Code Map/news — pipeline]] | `src/finterminal/news/` — 7-module news pipeline (collect → tag → dedupe → embed → cluster → lineage) |
+| [[04 - Code Map/agents — news_trend]] | `src/finterminal/agents/news_trend.py` — `NewsTrendAgent`; powers `/trends [sector]` |
+| [[04 - Code Map/data — news_store]] | `src/finterminal/data/news_store.py` — DuckDB read/write for 3 news tables |
+| [[04 - Code Map/features — compute_quality]] | `src/finterminal/features/compute_quality.py` — 4 quality metrics (roe, leverage, earnings_growth, quality_score) with cross-sectional z-scoring |
+| [[04 - Code Map/data — mgmt_claims]] | `src/finterminal/data/migrations/006_mgmt_claims.sql` + CRUD helpers — outcomes ledger for mgmt claims (v1 structural foundation) |
 
 ---
 
@@ -90,6 +98,9 @@
 | 2026-04-29 | [[05 - Build Log/2026-04-29 — 4a Scaffold Smoke + Post-Smoke Fixes]] — Smoke green; 3 post-smoke commits; FU-1 + FU-2 + 4 qualitative items tracked as Phase 2 backlog |
 | 2026-04-29 | [[05 - Build Log/2026-04-29 — C Sprint (FU-2 Q-1 Q-2 Smoke Green)]] — FU-2 + Q-1 + Q-2 prompt sprint; conglomerate guard; severity rubric; 77 → 93 tests |
 | 2026-04-29 | [[05 - Build Log/2026-04-29 — Sprint A Live + B-1 Hardening]] — Sprint A Ollama live-verified (qwen3.5:9b); Q-5 NSE fallthrough + Q-6 markup escape shipped; 104 → 123 tests; Q-7 backlog |
+| 2026-04-29 | [[05 - Build Log/2026-04-29 — Sprint B-2a News Trend]] — Full news + trend pipeline shipped; DuckDB vss; 7 news modules + NewsTrendAgent + Momentum badge; 123 → 173 tests |
+| 2026-04-29 | [[05 - Build Log/2026-04-29 — Plan Reshape & Sub-Project 1 Spec]] — Planning session: input.md critique absorbed; build plan reshaped into 4 sub-projects; Sub-project #1 (Outcomes Ledger + Engine Taxonomy) fully specced; dual-pipeline architecture locked; no code shipped |
+| 2026-05-01 | [[05 - Build Log/2026-05-01 — Sub-project 3 Quality Engine v1]] — Quality Engine v1 shipped; 4 quality metrics (roe, leverage, earnings_growth, quality_score) wired via compute_quality.py; mgmt_claims ledger (migration 006) foundation for sub-project #6; 266 → 293 tests |
 
 ---
 

@@ -1,61 +1,354 @@
 
+1. You built a feature store… but not a decision system
 
-### The Problem
-The keys you listed (FMP, Benzinga, Tiingo, Alpha Vantage, FRED, etc.) are **heavily US-centric**. Most of them have very limited or poor support for **Indian equities (NSE/BSE)** — especially for:
-- Fundamentals (PE, EPS, balance sheet, ownership, etc.)
-- Quality Indian news
-- Corporate actions, transcripts, ownership flows (FII/DII, pledges), consensus estimates
+Your entire plan is:
 
-FMP gives partial support for `.NS` but many fields require a paid plan. Others either timeout, return incomplete data, or have no India coverage at all.
+“Compute features → store → later use”
 
-### What You Should Do Instead (Recommended Strategy for FINTERMINAL)
+Missing:
 
-#### 1. **Primary Approach: Build India-Specific Data Layer (Recommended)**
-Don't rely only on OpenBB's global providers for Indian data. Create dedicated, robust sources for India in your terminal.
+* How features → scores
+* How scores → decisions
+* How decisions → feedback loop
 
-**Best Free / Low-Cost Sources for Indian Markets (2026):**
+You’ve built plumbing, not alpha generation
 
-| Source                  | Best For                          | Type          | Cost          | Recommendation |
-|-------------------------|-----------------------------------|---------------|---------------|----------------|
-| **yfinance**            | Price, historical OHLCV, basic info | Library      | Free         | Use as primary for quotes & history |
-| **NSE India + BSE**     | Corporate announcements, events   | Official     | Free         | Scrape / use public endpoints |
-| **Screener.in**         | Excellent fundamentals, ratios, ownership | Website      | Free         | Scrape key pages (very reliable) |
-| **Trendlyne**           | Screeners, ownership, broker reports, consensus | Website      | Free + Paid  | Scrape for ownership, pledges, consensus |
-| **Moneycontrol / Economic Times** | News + some fundamentals     | Websites     | Free         | RSS + targeted scraping |
-| **Upstox / ICICI Breeze APIs** | Market data & historical         | Broker APIs  | Free         | Good if you have demat account |
-| **TrueData / Global Datafeeds** | Real-time & historical (paid)   | Commercial   | Paid         | Consider later for low-latency |
+⸻
 
-**Action Plan for Phase 1 & 2:**
-- Keep **OpenBB + yfinance** for basic quotes and historical prices (`.NS` suffix works decently).
-- Build custom scrapers / parsers for:
-  - `src/finterminal/data/india/` folder
-  - Fundamentals from Screener.in
-  - Ownership + pledges from Trendlyne / NSE
-  - News from Moneycontrol / Livemint RSS
-- Use **BeautifulSoup + httpx** or **Playwright** for robust scraping (with proper delays and user-agent rotation).
+2. Engines (Reflexivity / Quality / Regime / Divergence) are NOT explicitly encoded
 
-#### 2. **Good Global APIs that Support India (Better than Current Ones)**
-- **EODHD** — One of the better global APIs with decent India coverage (EOD + some fundamentals).
-- **Finnhub** — Has India support in free tier (quotes, news, some fundamentals).
-- **Twelve Data** — Supports India with reasonable coverage.
-- **Marketstack** — Global including India (free tier available).
+You talked about them earlier.
+But in your implementation:
 
-You can add these via OpenBB's provider system or directly in your custom India layer.
+* Reflexivity = scattered across sentiment + news
+* Quality = placeholders (not real yet)
+* Regime = partially implemented
+* Divergence = only 1 feature (narrative_price_divergence)
 
-#### 3. **Immediate Practical Steps**
-1. **Add yfinance fallback** in your `openbb_client.py` for Indian tickers.
-2. **Create India-specific modules** early:
-   - `india_fundamentals.py` (scrape Screener.in)
-   - `india_ownership.py` (Trendlyne / NSE)
-   - `india_news.py` (RSS + scraping)
-3. In `config/models.yaml` and your router, keep the US-heavy keys but mark them clearly for Phase 3 (US expansion).
-4. For now, disable or deprioritize providers that fail on `.NS` tickers and log a clear warning.
+This is not an engine layer.
 
-### Long-term Strategy for FINTERMINAL
-Since your terminal's core value is **deep Indian equity research** (ownership flows, pledges, transcripts, forensic scores, consensus revisions, CEO signals), relying on generic US APIs will always be painful.
+This is:
 
-**Best path:**
-- Build a strong **custom Indian data engine** (scraping + public NSE/BSE feeds + Screener.in/Trendlyne).
-- Use OpenBB + yfinance + Finnhub/EODHD as supplements.
-- Later (Phase 3), add paid low-latency providers like TrueData only if needed.
+fragmented feature engineering
+
+⸻
+
+3. No Feature Hierarchy / Priority
+
+All features are equal in your current system:
+
+mom_7d = same importance as sentiment_delta
+
+That’s wrong.
+
+Markets are hierarchical:
+
+* Fundamentals dominate long-term
+* Reflexivity dominates short-term
+
+You haven’t encoded that.
+
+⸻
+
+4. No Time Awareness (Critical Miss)
+
+You compute features at t, but you don’t encode:
+
+t-1 vs t vs trend
+
+Example:
+
+* sentiment rising vs already high
+* momentum accelerating vs slowing
+
+Right now:
+
+static snapshot → weak signal
+
+⸻
+
+5. Feedback System is STILL not wired
+
+You referenced:
+
+* outcomes ledger
+* signal success
+
+But your feature store:
+
+❌ does NOT pull:
+
+* past signal success rate
+* regime-conditioned performance
+
+So ML will learn from raw features—but not from its own past mistakes
+
+That’s a major miss.
+
+⸻
+
+6. Shannon Entropy is underutilized
+
+You added:
+
+* entropy_sentiment (placeholder)
+
+But not:
+
+* entropy_news_clusters
+* entropy_change (stability over time)
+
+You’re using entropy as a checkbox—not a signal amplifier.
+
+⸻
+
+7. No Kill-Switch Integration
+
+Your system still allows:
+
+* missing fundamentals
+* missing sentiment
+* weak data
+
+→ and still produces features
+
+Where is:
+
+IF (critical features missing) → BLOCK signal
+
+⸻
+
+The Pivot
+
+You need to elevate this from:
+
+Feature Store
+
+to:
+
+Signal Intelligence Layer
+
+⸻
+
+What You Built (Current System)
+
+From your doc  ￼
+
+Data → compute_* → orchestrator → feature_store → DB
+
+Good engineering.
+
+But incomplete system.
+
+⸻
+
+What You MUST Upgrade To
+
+Layer 1 — Feature Store (You built this ✔)
+
+* Deterministic
+* No leakage
+* Atomic
+
+⸻
+
+Layer 2 — ENGINE LAYER (MISSING)
+
+You must explicitly compute:
+
+⸻
+
+A. Reflexivity Engine
+
+Derived features:
+
+reflexivity_score =
+  z(sentiment_delta)
++ z(cluster_momentum)
+- z(entropy_sentiment)
+
+⸻
+
+B. Quality Engine
+
+quality_score =
+  z(roe)
++ z(earnings_growth)
+- z(leverage)
+
+(Currently placeholders → incomplete)
+
+⸻
+
+C. Regime Engine ✔ (partial)
+
+Already implemented:
+
+* nifty_return_50d
+* volatility
+
+But missing:
+
+* regime transitions
+* regime persistence
+
+⸻
+
+D. Divergence Engine
+
+You only have:
+
+cluster_momentum_z - mom_7d_z
+
+You ALSO need:
+
+divergence_fundamental =
+  reflexivity_score - quality_score
+
+This is the real alpha signal.
+
+⸻
+
+Add This File (Critical)
+
+You need:
+
+features/compute_engines.py
+
+⸻
+
+Example Implementation
+
+def compute_reflexivity_score(sentiment_delta, cluster_momentum, entropy):
+    if None in (sentiment_delta, cluster_momentum, entropy):
+        return None, True
+    return sentiment_delta + cluster_momentum - entropy, False
+
+⸻
+
+Layer 3 — FEATURE AGGREGATION (Missing)
+
+Right now:
+
+* Features are flat
+
+You need:
+
+feature_vector →
+engine_scores →
+meta_features
+
+⸻
+
+Add Meta Features
+
+reflexivity_vs_quality =
+  reflexivity_score - quality_score
+regime_adjusted_momentum =
+  mom_7d * regime_bull
+confidence_penalty =
+  entropy_sentiment
+
+⸻
+
+Layer 4 — FEEDBACK FEATURES (CRITICAL ADDITION)
+
+From your outcomes system:
+
+You MUST add:
+
+past_signal_success_rate
+past_signal_return_avg
+signal_success_given_regime
+
+These should be features.
+
+⸻
+
+Layer 5 — SCORING ENGINE (NOT PRESENT)
+
+After features:
+
+You need:
+
+score =
+  ML_model(features)
+
+Without this:
+
+your system never becomes predictive
+
+⸻
+
+Layer 6 — DECISION ENGINE
+
+IF score > threshold → BUY
+IF score < threshold → SELL
+ELSE → NO TRADE
+
+⸻
+
+Layer 7 — CRITIC INTEGRATION
+
+Right now critic is outside.
+
+It should be:
+
+features → score → LLM explanation → critic validation → final output
+
+⸻
+
+Final Architecture (Corrected)
+
+DATA
+  ↓
+FEATURE STORE (you built)
+  ↓
+ENGINE LAYER
+  ├── Reflexivity
+  ├── Quality
+  ├── Regime
+  ├── Divergence
+  ↓
+FEATURE VECTOR
+  ↓
+ML MODEL (prediction)
+  ↓
+SCORING ENGINE
+  ↓
+LLM (explanation)
+  ↓
+CRITIC (validation)
+  ↓
+OUTPUT
+  ↓
+OUTCOMES LEDGER
+  ↓
+FEEDBACK → back to ML
+
+⸻
+
+What You Did Right (Don’t Ignore This)
+
+* Atomic feature computation ✔
+* No leakage ✔
+* Strong testing discipline ✔
+* Clean modular structure ✔
+
+This is rare.
+
+⸻
+
+What Will Kill You If Not Fixed
+
+1. No engine abstraction
+2. No scoring layer
+3. No feedback-driven features
+4. No temporal dynamics
+
+Fix these or:
+
+You’ll have a perfect data system… producing average insights
+
+⸻
 

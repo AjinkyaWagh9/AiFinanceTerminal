@@ -4,37 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "5f3aea6b2f5a064f",
+        "id": "acd6f9af33e8dd83",
         "type": "tabs",
         "children": [
           {
-            "id": "2c54ac1959262c82",
+            "id": "b68ecabe4119e40b",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Welcome.md",
+                "file": "04 - Code Map/agents — news_trend.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Welcome"
-            }
-          }
-        ]
-      },
-      {
-        "id": "00e10df9278e59dc",
-        "type": "tabs",
-        "children": [
-          {
-            "id": "3a142683783d81a3",
-            "type": "leaf",
-            "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
+              "title": "agents — news_trend"
             }
           }
         ]
@@ -94,7 +78,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "57fdf5b327e3af01",
@@ -199,8 +184,15 @@
       "bases:Create new base": false
     }
   },
-  "active": "2c54ac1959262c82",
+  "active": "b68ecabe4119e40b",
   "lastOpenFiles": [
+    "03 - Phases/Phase 2.5 - Analyst-Grade Layer.md",
+    "03 - Phases/Phase 2 - Multi-Agent Foundation.md",
+    "02 - Decisions/ADR-016 — DuckDB vss over ChromaDB.md",
+    "06 - Glossary.md",
+    "00 - Project Overview.md",
+    "05 - Build Log/2026-04-29 — 4a Scaffold Smoke + Post-Smoke Fixes.md",
+    "01 - Architecture/Agent System.md",
     "Welcome.md"
   ]
 }

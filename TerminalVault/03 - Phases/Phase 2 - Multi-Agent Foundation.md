@@ -13,7 +13,7 @@
 The terminal stops being a single-shot REPL and becomes a coordinated agent system around news + critique.
 
 - **CrewAI integration:** register agents 1–5 (Supervisor, Data, News & Trend, Critic, Quant/Bull-Bear).
-- **News & Trend agent:** RSS aggregation across Indian + global sources, dedupe (MinHash), embeddings → ChromaDB, daily clustering, narrative-arc detection.
+- **News & Trend agent:** RSS aggregation across Indian + global sources, dedupe (MinHash), embeddings → DuckDB vss (ChromaDB rejected — see [[02 - Decisions/ADR-016 — DuckDB vss over ChromaDB]]), daily clustering, narrative-arc detection. **Shipped B-2a.**
 - **Critic agent:** runs on every `/analyze` output; confidence score + dissenting view appear in panel.
 - **Watchlist persistence** in SQLite.
 - **TUI upgrade to Textual:** tabs (Dashboard, Ticker, News, Watchlist).
@@ -27,9 +27,23 @@ Phase 2 split into independent sub-deliverables for incremental shipping:
 | Sub | Name | Status |
 |---|---|---|
 | 4a | Multi-agent scaffold (`/analyze` → Data + Analyst + Critic) | **SHIPPED + LIVE-VERIFIED 2026-04-29** — smoke green [[05 - Build Log/2026-04-29 — 4a Scaffold Smoke + Post-Smoke Fixes]]; Ollama provider live-verified against qwen3.5:9b [[05 - Build Log/2026-04-29 — Sprint A Live + B-1 Hardening]] |
-| 4b | News & Trend agent + `/trends` | Planned (next) |
+| B-2a | News & Trend pipeline (`/refresh-news` + `/trends`) | **SHIPPED 2026-04-29** — 173 tests passing; DuckDB vss; 7 news modules + `NewsTrendAgent` + Momentum badge — [[05 - Build Log/2026-04-29 — Sprint B-2a News Trend]] |
+| B-2b | `/analyze` enrichment + `/brief` command | **ON HOLD** — paused pending Sub-project #1 (Outcomes Ledger). Resuming before #1 lands would add unevaluated signals with no measurement layer. |
 | 4c | Watchlist persistence | Already shipped in Phase 1 |
 | 4d | Textual TUI migration | Deferred |
+
+### Active workstream (2026-05-01): Sub-project #3 — Quality Engine
+
+> After input.md critique, the build plan was reshaped into 4 sub-projects. Sub-project #3 (Quality Engine v1) shipped 2026-05-01. Sub-project #4 (Sentiment routing) now active.
+
+| Sub-project | Name | Status |
+|---|---|---|
+| #1 | Foundation: Outcomes Ledger + Engine Taxonomy | Shipped 2026-04-29 |
+| #2 | `/analyze` 5-engine card reshape | Shipped 2026-04-30 |
+| #3 | Quality Engine v1 (roe, leverage, earnings_growth, quality_score) | **SHIPPED 2026-05-01** — 293 tests (266 baseline + 27 new) — [[05 - Build Log/2026-05-01 — Sub-project 3 Quality Engine v1]] |
+| #4 | Sentiment routing (Reflexivity engine) | **Active** — blocked on outcome ledger baseline signal quality |
+
+See [[05 - Build Log/2026-04-29 — Plan Reshape & Sub-Project 1 Spec]] for full rationale.
 
 Framework note: per ADR-013, 4a uses hand-rolled async over the existing `router.for_agent()` interface, not CrewAI. ADR-002's Phase 3 LangGraph migration plan is unchanged.
 
@@ -74,7 +88,7 @@ Opening the terminal at 8 AM surfaces ≥3 actionable signals you wouldn't have 
 |---|---|
 | CrewAI version pinning | Lock to a tested version; read release notes before upgrading |
 | MinHash deduplication tuning | Threshold needs calibration; too-aggressive dedup loses related articles |
-| ChromaDB cold start on first embed | Pre-warm ChromaDB on startup (backfill last 7 days) |
+| Embedding model cold start (~8–12 s) | `all-MiniLM-L6-v2` lazy-loaded + cached in `./data/models/`; subsequent runs <4 s — ChromaDB not used (see [[02 - Decisions/ADR-016 — DuckDB vss over ChromaDB]]) |
 | Rich → Textual migration complexity | Both are from Will McGugan; `Layout` + `Panel` translate to Textual `Widget`s |
 
 ---
