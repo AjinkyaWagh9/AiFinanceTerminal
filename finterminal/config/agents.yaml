@@ -1,0 +1,57 @@
+# FINTERMINAL — Agent → Model Assignments
+# Agent code never names a model. Edit this file to swap.
+# See ../MODEL-SWAP-GUIDE.md for playbooks.
+
+agents:
+  # ---- Phase 2 / 4a ----
+  analyst:
+    primary: gpt-5-mini
+    fallbacks: [gpt-5]
+    description: "Runs analyst.md to produce 7-section structured analysis (variant/bull/bear/conviction/confidence/assumptions/what-would-change)"
+    # Swap to Claude when ANTHROPIC_API_KEY is set:
+    # primary: claude-sonnet-4-6
+    # fallbacks: [claude-opus-4-7]
+    # Or use the flagship for deeper reasoning:
+    # primary: gpt-5
+    # fallbacks: [gpt-5-mini, claude-sonnet-4-6]
+    # Or the cheapest (classifier-grade only):
+    # primary: gpt-5-nano
+    # fallbacks: [gpt-5-mini]
+
+  data:
+    primary: claude-sonnet-4-6     # Phase 1 uses Claude; Phase 2 swaps to qwen3:8b once Ollama is set up
+    fallbacks: []
+    description: "Quotes, fundamentals, screening via OpenBB / NSE / BSE"
+
+  news:
+    primary: claude-sonnet-4-6     # Phase 1 uses Claude; Phase 2 swaps to qwen3:8b
+    fallbacks: []
+    description: "RSS aggregation, dedupe, clustering, summarization"
+
+  critic:
+    primary: gpt-5-mini
+    fallbacks: [gpt-5]
+    description: "Adversarial review of /analyze output. Flags missing data, weak assumptions"
+    # Swap to Claude when ANTHROPIC_API_KEY is set:
+    # primary: claude-sonnet-4-6
+    # fallbacks: [claude-opus-4-7]
+
+  bull_bear:
+    primary: claude-sonnet-4-6
+    fallbacks: [claude-opus-4-7]
+    description: "Builds bull case + bear case with weighted factors"
+
+  # ---- Phase 2.5 (commented out until then) ----
+  # sentiment:
+  #   primary: grok-3-mini
+  #   fallbacks: []
+  #   enabled: false
+  # transcript:
+  #   extract: { primary: qwen3:8b, fallbacks: [claude-sonnet-4-6] }
+  #   synthesize: { primary: claude-sonnet-4-6, fallbacks: [claude-opus-4-7] }
+  # ceo_tracker: { primary: qwen3:8b, fallbacks: [claude-sonnet-4-6] }
+  # ownership: { primary: phi4-mini, fallbacks: [qwen3:8b] }
+  # quality: { primary: phi4-mini, fallbacks: [qwen3:8b] }
+  # comps: { primary: qwen3:8b, fallbacks: [claude-sonnet-4-6] }
+  # macro: { primary: phi4-mini, fallbacks: [qwen3:8b] }
+  # calendar: { primary: null }

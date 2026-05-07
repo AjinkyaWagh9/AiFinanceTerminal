@@ -1,0 +1,115 @@
+# FINTERMINAL — Model Registry
+# Declares all models available to the system. Agents reference these by `name`.
+# To add a model: add an entry here and ensure the provider class exists in src/finterminal/llm/providers/.
+# See ../MODEL-SWAP-GUIDE.md for playbooks.
+#
+# Pricing is per 1M tokens (USD). Verify against provider docs before relying on cost numbers.
+
+models:
+  # ---- Anthropic (cloud, premium synthesis) ----
+  - name: claude-sonnet-4-6
+    provider: anthropic
+    api_id: claude-sonnet-4-6
+    context_window: 200000
+    cost_per_mtok_in: 3.0
+    cost_per_mtok_out: 15.0
+    capabilities: [reasoning, tool_use, vision, json_mode, synthesis]
+    tags: [cloud, premium, synthesis]
+
+  - name: claude-opus-4-7
+    provider: anthropic
+    api_id: claude-opus-4-7
+    context_window: 1000000
+    cost_per_mtok_in: 15.0
+    cost_per_mtok_out: 75.0
+    capabilities: [reasoning, tool_use, vision, json_mode, synthesis, deep_reasoning]
+    tags: [cloud, premium, deep-thinking]
+
+  # ---- OpenAI (cloud, cost-tier alternatives to Claude) ----
+  # Verify pricing at https://platform.openai.com/docs/pricing
+  - name: gpt-5-nano
+    provider: openai
+    api_id: gpt-5-nano
+    api_key_env: OPENAI_API_KEY
+    context_window: 400000
+    cost_per_mtok_in: 0.05
+    cost_per_mtok_out: 0.40
+    capabilities: [classification, json_mode]
+    tags: [cloud, very-cheap, classifier]
+
+  - name: gpt-5-mini
+    provider: openai
+    api_id: gpt-5-mini
+    api_key_env: OPENAI_API_KEY
+    context_window: 400000
+    cost_per_mtok_in: 0.25
+    cost_per_mtok_out: 2.00
+    capabilities: [reasoning, tool_use, json_mode, synthesis]
+    tags: [cloud, cheap, synthesis]
+
+  - name: gpt-5
+    provider: openai
+    api_id: gpt-5
+    api_key_env: OPENAI_API_KEY
+    context_window: 400000
+    cost_per_mtok_in: 1.25
+    cost_per_mtok_out: 10.00
+    capabilities: [reasoning, tool_use, vision, json_mode, synthesis, deep_reasoning]
+    tags: [cloud, premium, synthesis]
+
+  # ---- Local via Ollama (Phase 2+) ----
+  - name: qwen3:8b
+    provider: ollama
+    api_id: qwen3:8b
+    context_window: 32768
+    cost_per_mtok_in: 0.0
+    cost_per_mtok_out: 0.0
+    capabilities: [reasoning, tool_use, multilingual, json_mode]
+    tags: [local, cheap, fast]
+
+  - name: phi4-mini
+    provider: ollama
+    api_id: phi4-mini
+    context_window: 16384
+    cost_per_mtok_in: 0.0
+    cost_per_mtok_out: 0.0
+    capabilities: [classification, json_mode]
+    tags: [local, very-fast, classifier]
+
+  # ---- Pulled locally on 2026-04-29 (verified via `ollama list`) ----
+  - name: qwen3.5:9b
+    provider: ollama
+    api_id: qwen3.5:9b
+    context_window: 32768
+    cost_per_mtok_in: 0.0
+    cost_per_mtok_out: 0.0
+    capabilities: [reasoning, tool_use, multilingual, json_mode, synthesis]
+    tags: [local, mid-tier, workhorse]
+    # Workhorse for Phase 2/2.5 mid-tier extraction (Data, News, Transcripts,
+    # CEO Tracker, Comps). 6.6 GB on disk. Indian-news multilingual capability
+    # is the key fit for our use case.
+
+  - name: gemma4:e4b
+    provider: ollama
+    api_id: gemma4:e4b
+    context_window: 8192
+    cost_per_mtok_in: 0.0
+    cost_per_mtok_out: 0.0
+    capabilities: [reasoning, json_mode]
+    tags: [local, mid-tier, alt]
+    # 9.6 GB on disk — bigger than expected. Despite the "e4b" tag, this is
+    # NOT a fast classifier; it's a second mid-tier option. Use as alt to
+    # qwen3.5:9b for A/B comparison or as fallback when qwen is degraded.
+
+  # ---- xAI (Phase 2.5, optional sentiment) ----
+  # xAI is OpenAI-API-compatible; uses the same provider class with a different base URL + key.
+  - name: grok-3-mini
+    provider: xai
+    api_id: grok-3-mini
+    api_key_env: GROK_API_KEY
+    base_url: https://api.x.ai/v1
+    context_window: 131072
+    cost_per_mtok_in: 0.30
+    cost_per_mtok_out: 0.50
+    capabilities: [classification, live_search, x_data]
+    tags: [cloud, cheap, sentiment]

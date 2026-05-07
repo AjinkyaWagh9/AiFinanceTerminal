@@ -15,12 +15,30 @@ venv/
 # Local data + secrets
 *.duckdb
 *.duckdb.wal
+*.sqlite
+*.sqlite-journal
 .env
 .env.local
-finterminal/data/*.duckdb
-finterminal/logs/*.log
+
+# Absorbed finterminal/ subtree — local-only state
+finterminal/.env
+finterminal/.env.local
+finterminal/data/
+finterminal/logs/
+finterminal/.worktrees/
+finterminal/build/
+finterminal/dist/
+finterminal/wheels/
+finterminal/*.egg-info/
+
+# Worktrees / build
+.worktrees/
+build/
+dist/
+wheels/
 
 # IDE
 .vscode/
 .idea/
 .DS_Store
+*.swp

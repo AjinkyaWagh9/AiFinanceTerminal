@@ -1,0 +1,94 @@
+4451785 chore(#4): uv.lock — vaderSentiment 3.3.2 lock from Task 1 sync
+aa254f8 test(#4): update stale assertions for 20-feature schema (5 reflexivity + 8 cols)
+8a61c07 feat(#4): promote 5 reflexivity FeatureSpecs + wire orchestrator (incl. feature_health)
+0461d0e feat(#4): compute_feature_health — meta-signal of narrative trustworthiness
+b3b94b0 feat(#4): compute_sentiment_level + delta with model wrapper, version stamp, ingestion-time fix
+dff6b0d feat(#4): freeze-on-write upsert + version/n_samples/confidence on FeatureCell
+e11a69b feat(#4): vaderSentiment dep + migration 007 — n_samples/confidence/feature_version/normalized
+487b012 feat(#3): insert_mgmt_claim + list_mgmt_claims CRUD helpers
+20f3e9f feat(#3): promote quality FeatureSpecs + wire orchestrator quality block
+e9c5f27 feat(#3): compute_quality_score — cross-sectional equal-weight z-score
+86ff280 feat(#3): compute_roe, compute_leverage, compute_earnings_growth
+ac8421d feat(#3): MAX_FUNDAMENTALS_STALENESS_DAYS constant + is_fundamentals_data_fresh gate
+9a69a88 feat(#3): migration 006 — mgmt_claims ledger table
+f54a5a3 fix(features): address Opus end-of-branch review (3 Important items)
+d2450c5 feat(features): /features SIGNAL_ID REPL inspector
+b051f31 test(features): end-to-end signal → feature vector
+07526eb test(isolation): extend guard — features/ is downstream-only
+d0d9cce feat(features): wire compute_for_signal into emit_signal (atomic tx)
+8ff90a9 feat(features): orchestrator — compute_for_signal v1 (18 features)
+d517ae9 feat(features): compute_news — cluster_momentum_z + narrative_price_divergence
+6d7120b feat(features): compute_regime — Nifty 50d return, 20d vol, regime one-hot
+94afc3d feat(features): compute_price — mom_7d, mom_30d, vol_20d, mom_7d_z
+edef263 feat(features): upsert_features with overwrite semantics
+6e15696 feat(features): D12 freshness gate (G7/G10) — stale prices/Nifty produce is_missing=true
+d5d3aa4 feat(features): rolling 60d z-score helper with min-obs gate
+4241430 feat(features): registry — FeatureSpec + V1_FEATURES (11 computable + 7 placeholders)
+7542f3d feat(features): migration 005 — signal_features table
+b4299cf feat(market_data): add 2025 NSE holidays + warn on unsupported year
+8d4c8b7 perf(market_data): skip already-ingested days in /refresh-prices
+5962c82 fix(outcomes): normalize tz-aware ts_emitted to IST-naive in emit_signal
+9c36ca1 test: pipeline-isolation guard + foundation end-to-end integration
+388ee55 feat(outcomes): one-shot historical backfill from news_clusters (>=7d old)
+d86f94d fix(outcomes): drop scope-creep first_seen coercion guard in news wiring
+52ba398 feat(outcomes): wire cluster_momentum emission into /refresh-news (fail-safe)
+f74f2c0 feat(outcomes): predictive_power + engine_summary + engines/base placeholder
+b97a2c6 feat(outcomes): resolve_pending + /backfill-outcomes command
+081f87e feat(outcomes): emit_signal — idempotent write of signal + 5 horizon stubs
+0ddf4d8 feat(market_data): regime snapshot helper (nifty close + 50d pct, vix-ready)
+49a40ef feat(market_data): ingestion orchestrator + /refresh-prices command
+f242aec feat(market_data): prices_eod upsert + ingestion_log helpers + last-close lookup
+384521d feat(market_data): NSE indices CSV parser + fixture (Nifty 50)
+c6df1a1 feat(market_data): NSE bhavcopy daily zip parser + fixture
+b244536 feat(market_data): NSE symbol normalization + unmapped-symbol logging
+649c303 feat(market_data): add NSE-friendly HTTP fetcher and holiday calendar
+07a7ee7 feat(outcomes): add Engine/SignalType enums + SIGNAL_REGISTRY
+a68b676 feat(outcomes): add migration 004 for signals/outcomes/prices_eod/ingestion_log
+7ea4de3 fix(news): show headline not URL in trends; drop stale articles >7d; raise cluster threshold to 0.55
+e0ae450 feat: Sprint B-2a — News & Trend pipeline (/refresh-news + /trends)
+760c3ab tune: raise CLUSTER_DISTANCE_THRESHOLD 0.25 → 0.40 (run-1 inspection: 219 clusters from 235 stories)
+f9eeaab feat(commands): /refresh-news + /trends [sector] commands
+9cec3f4 feat(ui): render_trends_table with Momentum badge + sector filter
+094df1b feat(agents): NewsTrendAgent Protocol wrapper (B-2a deterministic, B-2b hooks ready)
+2dc54c7 feat(news): pipeline orchestrator + news_store DuckDB helpers
+fe4b7de feat(news): lineage — centroid cosine matching + story_count_delta
+fe03f61 fix(news): explicit float32 cast on embed() return value
+7b24921 feat(news): embedder (all-MiniLM-L6-v2 lazy load) + full agglomerative cluster.py
+52601e5 feat(news): tagger — NSE alias map + rapidfuzz fallback + sector lookup
+daa0915 feat(news): dedupe — URL exact + MinHash Jaccard 0.85; cluster.py threshold constants
+56eb8b5 feat(news): collector — 11 feeds, normalize to Story dataclass
+8b5c34d fix(data/india): alias stripping only removes legal suffixes, not industry descriptors
+0d003bd feat(data/india): NSE universe loader + sector_map.yaml + EQUITY_L fixture
+cde2c01 feat(data): migration 003 — news_stories + news_clusters + cluster_lineage with vss
+adfa89b chore(deps): add sentence-transformers datasketch rapidfuzz scipy numpy for B-2a
+4f539cc chore: add .worktrees/ to .gitignore
+4ea88f9 feat(llm): register qwen3.5:9b + gemma4:e4b; live-verify Ollama provider
+0b5e723 fix(ui): escape Rich markup in LLM content so [src:...] tags render (Q-6)
+bc269cb feat(data): NSE direct quote API as yfinance fallback (Q-5)
+2692c06 test: add NSE quote + quote-fallthrough + markup-escape regression tests (red)
+53abea9 feat(llm): implement OllamaProvider against native /api/chat
+7889024 prompt(critic): defined severity rubric + collegial tone (Q-1)
+3244943 prompt(analyst): explicit src-tag whitelist + conglomerate guard
+e17bfa6 fix(dossier): align tags with context-block convention (dotted-path)
+cc16a01 test: add tag-discipline regression tests (FU-2, red)
+563c11f config(agents): point critic at gpt-5-mini (was claude-sonnet-4-6)
+9c86769 fix(agents): import build_router from finterminal.llm package, not .llm.router
+f5f9c91 chore: ruff --fix unused imports (4a final verify)
+ac8bd74 refactor: rewire /analyze to multi-agent flow; rename supervisor→analyst; drop legacy module
+a03f86b feat(ui): extend analysis_panel with optional critic block + degraded badge
+cc95857 feat(agents): add analyze_flow orchestrator with retry-degrade Critic + result cache
+6249c13 feat(agents): add Analyst agent (extracted from supervisor.py); preserves baseline parse
+e65f45d feat(agents): add Critic agent with parse_critique and retry-friendly failure mode
+56f3b77 feat(data): critiques table + payload_json column + recent_analysis cache helper
+021db9f feat(agents): add deterministic Data agent with parallel fetches + dossier
+63eea0b Task 4: Add source dossier builder for Critic agent
+f751ef4 feat(llm): add cache_system kwarg to LLMProvider.complete (Anthropic wires; others no-op)
+de274a4 feat(agents): add Agent protocol + AgentRegistry
+6b45875 test: capture analyst non-regression baseline before 4a refactor
+1232297 Indian data layer — Screener.in fundamentals + Moneycontrol/Mint/ET RSS news + Finnhub
+09df8ff news: Benzinga primary for US; ticker prefix syntax for cross-exchange
+47b210d analyst.md v2 — factor hierarchy, Variant Perception, Conviction tiering
+7341e8f Phase 1 Day 5 — /analyze RELIANCE running end-to-end on gpt-5-mini
+cf79139 Phase 1 Days 3-5 — live OpenBB data, REPL commands, /analyze pipeline
+db2e1cf Fix gitignore: anchor /data/ so it stops shadowing src/finterminal/data/
+084913b Phase 1 bootstrap — repo skeleton + LLM abstraction layer

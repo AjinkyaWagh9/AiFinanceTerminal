@@ -1,0 +1,13 @@
+{
+  "parsed": {
+    "assumptions": "- Crude stays in $70-95 range\n- No regulatory action on telecom tariff hikes\n- Capex schedule holds within \u00b115% of stated plan",
+    "bear_case": "- New-energy capex is binary and 5+ years to monetization [src: news[2]]\n- Telecom ARPU growth slowing; Jio user adds decelerated [src: news[1]]\n- Conglomerate discount likely persists with no demerger catalyst",
+    "bull_case": "- Refining margins improving on lighter crude slate [src: news[0]]\n- Jio + retail subscriber base provides predictable cashflow [src: fundamentals.revenue_ttm]\n- Net debt has come down vs FY23 peak [src: fundamentals.debt_to_equity]",
+    "confidence": 0.55,
+    "conviction": "Watch Long",
+    "variant_perception": "Consensus is broadly bullish on capex pipeline; we are skeptical because new-energy capex has not yet shown unit-economics that justify the multiple. [src: news[2]]",
+    "what_would_change": "- A 20%+ Jio ARPU step-up announcement (bullish)\n- Promoter pledge increase >10% of holdings (bearish)\n- Material delay (>12mo) on new-energy first-revenue date (bearish)"
+  },
+  "raw_response": "## Variant Perception\nConsensus is broadly bullish on capex pipeline; we are skeptical because new-energy capex has not yet shown unit-economics that justify the multiple. [src: news[2]]\n\n## Bull Case\n- Refining margins improving on lighter crude slate [src: news[0]]\n- Jio + retail subscriber base provides predictable cashflow [src: fundamentals.revenue_ttm]\n- Net debt has come down vs FY23 peak [src: fundamentals.debt_to_equity]\n\n## Bear Case\n- New-energy capex is binary and 5+ years to monetization [src: news[2]]\n- Telecom ARPU growth slowing; Jio user adds decelerated [src: news[1]]\n- Conglomerate discount likely persists with no demerger catalyst\n\n## Conviction\nWatch Long\n\n## Confidence\n0.55\n\n## Assumptions\n- Crude stays in $70-95 range\n- No regulatory action on telecom tariff hikes\n- Capex schedule holds within \u00b115% of stated plan\n\n## What Would Change My Mind\n- A 20%+ Jio ARPU step-up announcement (bullish)\n- Promoter pledge increase >10% of holdings (bearish)\n- Material delay (>12mo) on new-energy first-revenue date (bearish)\n",
+  "ticker": "RELIANCE.NS"
+}

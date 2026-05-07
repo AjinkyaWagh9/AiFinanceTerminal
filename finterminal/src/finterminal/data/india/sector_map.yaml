@@ -1,0 +1,46 @@
+# Curated ticker → trends-bucket map. 12 sectors.
+# Source: NSE industry classification, hand-collapsed to trends-friendly buckets.
+# Update at each phase boundary; PRs welcome.
+
+# Banking
+HDFCBANK: Banking
+ICICIBANK: Banking
+SBIN: Banking
+AXISBANK: Banking
+KOTAKBANK: Banking
+BAJFINANCE: Banking
+
+# IT
+TCS: IT
+INFY: IT
+HCLTECH: IT
+WIPRO: IT
+
+# Energy
+RELIANCE: Energy
+NTPC: Energy
+ONGC: Energy
+POWERGRID: Energy
+ADANIENT: Energy
+
+# FMCG
+ITC: FMCG
+HINDUNILVR: FMCG
+ASIANPAINT: FMCG
+TITAN: FMCG
+
+# Auto
+MARUTI: Auto
+
+# Metals
+TATASTEEL: Metals
+JSWSTEEL: Metals
+
+# Telecom
+BHARTIARTL: Telecom
+
+# Pharma
+SUNPHARMA: Pharma
+
+# Capital Goods
+LT: Capital Goods

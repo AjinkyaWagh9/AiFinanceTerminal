@@ -1,0 +1,65 @@
+{
+  "info": {
+    "symbol": "RELIANCE",
+    "companyName": "Reliance Industries Limited",
+    "industry": "Refineries"
+  },
+  "priceInfo": {
+    "lastPrice": 1421.00,
+    "change": 31.50,
+    "pChange": 2.27,
+    "previousClose": 1389.50,
+    "open": 1395.00,
+    "close": 1421.00,
+    "vwap": 1410.45,
+    "lowerCP": "1250.55",
+    "upperCP": "1528.45",
+    "pPriceBand": "No Band",
+    "basePrice": 1389.50,
+    "intraDayHighLow": {"min": 1391.10, "max": 1428.55, "value": 1421.00},
+    "weekHighLow": {"min": 1147.80, "max": 1608.85},
+    "iNavValue": null,
+    "checkINAV": false,
+    "tickSize": 0.05,
+    "totalTradedVolume": 8281000
+  },
+  "securityInfo": {
+    "boardStatus": "Main",
+    "tradingStatus": "Active",
+    "tradingSegment": "Normal Market",
+    "sessionNo": "-",
+    "slb": "Yes",
+    "classOfShare": "Equity",
+    "derivatives": "Yes",
+    "surveillance": {"surv": null, "desc": null},
+    "faceValue": 10,
+    "issuedSize": 13532182600
+  },
+  "metadata": {
+    "series": "EQ",
+    "symbol": "RELIANCE",
+    "isin": "INE002A01018",
+    "status": "Listed",
+    "listingDate": "29-Nov-1995",
+    "industry": "Refineries",
+    "lastUpdateTime": "29-Apr-2026 11:30:00",
+    "pdSectorPe": "21.86",
+    "pdSymbolPe": "27.45",
+    "pdSectorInd": "REFINERIES"
+  },
+  "marketDeptOrderBook": {
+    "totalBuyQuantity": 192043,
+    "totalSellQuantity": 247521,
+    "tradeInfo": {
+      "totalTradedVolume": 8281000,
+      "totalTradedValue": 11680.45,
+      "totalMarketCap": 19232845.50,
+      "ffmc": 9617422.75,
+      "impactCost": 0.02,
+      "cmDailyVolatility": "1.45",
+      "cmAnnualVolatility": "27.85",
+      "marketLot": "1",
+      "activeSeries": "EQ"
+    }
+  }
+}
