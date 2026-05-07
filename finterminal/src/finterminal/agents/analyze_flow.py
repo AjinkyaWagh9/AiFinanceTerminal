@@ -6,7 +6,10 @@ Flow:
   3. Analyst agent (LLM, system-cached).
   4. Critic agent with retry-then-degrade fallback.
   5. Persist analyses + critiques rows.
-  6. Return AnalysisResult.
+  6. ML inline badge — calls predictor.predict on the latest signal for
+     the ticker (if any). Errors here are non-fatal: warning logged,
+     badge omitted (ml_cells=None). Never breaks the analyze flow.
+  7. Return AnalysisResult.
 
 The Critic's failure is non-fatal: a degraded row is written and the result
 returned with `degraded=True`. The Analyst's failure IS fatal — there is no
@@ -14,7 +17,8 @@ analysis without an Analyst.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+import logging
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Callable
 
@@ -23,12 +27,76 @@ import duckdb
 from ..data import duckdb_store, openbb_client
 from ..llm.base import LLMProvider
 from ..llm.router import Router
+from ..ml import predictor
 from .analyst import AnalystAgent
 from .base import AgentContext, AgentRegistry
 from .critic import CriticAgent
 from .data import DataAgent
 
+logger = logging.getLogger(__name__)
+
 RESULT_CACHE_TTL_S = 300  # 5 min — see spec §6 lever 4
+
+
+# ---------------------------------------------------------------------------
+# ML inline badge helpers (spec §3 + M7)
+# ---------------------------------------------------------------------------
+
+def _latest_signal_id(conn: duckdb.DuckDBPyConnection, ticker: str) -> str | None:
+    """Return the most recent signal_id for *ticker*, or None if no signals exist."""
+    try:
+        row = conn.execute(
+            "SELECT signal_id FROM signals WHERE ticker = ? ORDER BY ts_emitted DESC LIMIT 1",
+            [ticker],
+        ).fetchone()
+        return row[0] if row else None
+    except Exception:
+        return None
+
+
+def _render_ml_badge(cells: list[dict]) -> str:
+    """Build a terminal-friendly multi-line badge string from PredictionCells.
+
+    One line per horizon. Non-cold-start cells show probabilities + conformal
+    set + top SHAP driver. Cold-start cells show the cold_start sentinel.
+
+    Spec §M7 badge format (Rich markup is safe here — callers use Rich console).
+    """
+    lines: list[str] = []
+    for cell in cells:
+        h = cell["horizon_days"]
+        mv = cell.get("model_version", "cold_start")
+
+        if cell.get("predicted_class") == "cold_start":
+            lines.append(
+                f"[dim]Model · {h}d  cold_start  (need ≥100 resolved outcomes)[/dim]"
+            )
+        else:
+            p_bull = cell.get("p_bull", 0.0)
+            p_base = cell.get("p_base", 0.0)
+            p_bear = cell.get("p_bear", 0.0)
+            conformal = cell.get("conformal_set", [])
+            conf_str = "{" + ",".join(sorted(conformal)) + "}" if conformal else "{}"
+            # Short version string: last segment after last underscore
+            ver = mv.rsplit("_", 1)[-1] if "_" in mv else mv
+
+            badge_line = (
+                f"[dim]Model · {h}d[/dim]  "
+                f"[green]base {p_base:.0%}[/green]  ·  "
+                f"[cyan]bull {p_bull:.0%}[/cyan]  ·  "
+                f"[red]bear {p_bear:.0%}[/red]  ·  "
+                f"[dim]conformal {conf_str}  ·  {ver}[/dim]"
+            )
+            lines.append(badge_line)
+
+            # Top SHAP driver tagline
+            shap_top = cell.get("shap_top", [])
+            if shap_top:
+                feat, val = shap_top[0]
+                sign = "+" if val >= 0 else ""
+                lines.append(f"  [dim]↳ top driver: {feat} ({sign}{val:.2f})[/dim]")
+
+    return "\n".join(lines)
 
 
 class AnalysisError(Exception):
@@ -44,6 +112,8 @@ class AnalysisResult:
     critic_payload: dict | None    # Critic parsed output OR None when degraded
     degraded: bool                 # True when Critic failed
     critic_error: str | None       # populated when degraded
+    ml_cells: list[dict] | None = field(default=None)   # PredictionCells (spec §4.5); None = badge skipped
+    ml_badge_text: str | None = field(default=None)     # pre-rendered badge string for display
 
 
 def _build_default_registry(router: Router) -> AgentRegistry:
@@ -114,6 +184,10 @@ def _rehydrate_cached(cached: dict) -> AnalysisResult:
         critic_payload=cached["critic_payload"],
         degraded=cached["degraded"],
         critic_error=cached["critic_error"],
+        # ml_cells not stored in cache — badge re-generated fresh on cache hit
+        # (cold vs. real model may change between TTL windows)
+        ml_cells=None,
+        ml_badge_text=None,
     )
 
 
@@ -194,6 +268,19 @@ async def run_analyze(
         error=critic_error,
     )
 
+    # 6. ML inline badge — non-fatal; errors produce ml_cells=None
+    ml_cells: list[dict] | None = None
+    ml_badge_text: str | None = None
+    try:
+        signal_id = _latest_signal_id(conn, ticker)
+        if signal_id is not None:
+            ml_cells = predictor.predict(conn, signal_id)
+            ml_badge_text = _render_ml_badge(ml_cells)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("ML badge skipped for %s: %s", ticker, exc)
+        ml_cells = None
+        ml_badge_text = None
+
     return AnalysisResult(
         analysis_id=aid,
         ticker=ticker,
@@ -202,4 +289,6 @@ async def run_analyze(
         critic_payload=critic_payload,
         degraded=degraded,
         critic_error=critic_error,
+        ml_cells=ml_cells,
+        ml_badge_text=ml_badge_text,
     )

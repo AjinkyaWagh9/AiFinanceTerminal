@@ -19,6 +19,7 @@ from .ui import panels
 from .market_data.ingestion import refresh_prices
 from .outcomes.backfill import resolve_pending as _resolve_pending
 from .commands_features import features_inspect
+from .commands_ml import ml_train, ml_backfill
 
 logger = logging.getLogger(__name__)
 
@@ -257,6 +258,62 @@ def _cmd_backfill_outcomes(args: list[str], console: Console) -> None:
     console.print(f"Resolved [bold]{n}[/bold] signal/horizon pairs.")
 
 
+# ---------- /ml ----------
+
+
+def _cmd_ml(args: list[str], console: Console) -> None:
+    """Dispatch `finterminal ml <subcommand>` (train | backfill)."""
+    import math
+
+    if not args:
+        raise _UsageError("/ml train | /ml backfill [--since YYYY-MM-DD]")
+    sub = args[0]
+    rest = args[1:]
+
+    conn = duckdb_store.get_conn()
+    try:
+        if sub == "train":
+            with console.status("training ML models (all horizons)…", spinner="dots"):
+                summary = ml_train(conn)
+            brier_str = (
+                f"{summary['mean_brier']:.4f}" if summary["mean_brier"] is not None else "n/a"
+            )
+            promoted_str = "promoted" if summary["promoted"] else "not promoted"
+            skipped_str = (
+                f", {summary['n_skipped']} horizon(s) cold-start"
+                if summary["n_skipped"] else ""
+            )
+            console.print(
+                f"[bold]{summary['model_version']}[/]  ·  {promoted_str}  ·  "
+                f"mean Brier [bold]{brier_str}[/]{skipped_str}"
+            )
+
+        elif sub == "backfill":
+            # Parse optional --since YYYY-MM-DD
+            since_str: str | None = None
+            i = 0
+            while i < len(rest):
+                if rest[i] == "--since" and i + 1 < len(rest):
+                    since_str = rest[i + 1]
+                    i += 2
+                elif rest[i].startswith("--since="):
+                    since_str = rest[i].split("=", 1)[1]
+                    i += 1
+                else:
+                    raise _UsageError(f"unknown flag: {rest[i]}")
+            with console.status("running ML prediction backfill…", spinner="dots"):
+                result = ml_backfill(conn, since_str=since_str)
+            console.print(
+                f"Wrote [bold]{result['rows_written']}[/bold] prediction rows "
+                f"(since [dim]{result['since_ts'].strftime('%Y-%m-%d')}[/dim])."
+            )
+
+        else:
+            raise _UsageError(f"unknown ml subcommand: {sub!r} — use 'train' or 'backfill'")
+    finally:
+        conn.close()
+
+
 # ---------- /features ----------
 
 
@@ -281,4 +338,5 @@ _COMMANDS = {
     "/trends": _cmd_trends,
     "/backfill-outcomes": _cmd_backfill_outcomes,
     "/features": _cmd_features,
+    "/ml": _cmd_ml,
 }
