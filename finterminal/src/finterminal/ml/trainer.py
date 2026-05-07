@@ -88,9 +88,10 @@ def train_all(
     slice_counts: dict[int, tuple] = {}
     min_ts_all: list[datetime] = []
     scaler_saved = False
+    feature_columns: list[str] = []
 
     for h in horizons:
-        art, scaler, min_ts, sc = _train_horizon(
+        art, scaler, min_ts, sc, meta = _train_horizon(
             conn, h, feature_version, now_utc, artifact_dir, random_state, params
         )
         per_horizon[h] = art
@@ -101,6 +102,8 @@ def train_all(
             scaler_saved = True
         if min_ts is not None:
             min_ts_all.append(min_ts)
+        if not feature_columns and meta is not None:
+            feature_columns = meta.feature_columns
 
     if not scaler_saved:
         with open(artifact_dir / "scaler.pkl", "wb") as f:
@@ -130,6 +133,7 @@ def train_all(
     manifest: dict[str, Any] = {
         "model_version": model_version,
         "feature_version": feature_version,
+        "feature_columns": feature_columns,
         "train_window_start": min(min_ts_all).isoformat() if min_ts_all else None,
         "train_window_end": now_utc.isoformat(),
         "random_state": random_state,
@@ -161,7 +165,7 @@ def _train_horizon(
     artifact_dir: Path,
     random_state: int,
     params: dict[str, Any],
-) -> tuple[HorizonArtifact, Scaler | None, datetime | None, tuple]:
+) -> tuple[HorizonArtifact, Scaler | None, datetime | None, tuple, MatrixMeta | None]:
     X, y, meta = build_matrix(conn, h, feature_version, until_ts=until_ts)
 
     if len(y) < COLD_START_MIN_ROWS:
@@ -169,7 +173,7 @@ def _train_horizon(
         nan = float("nan")
         return (
             HorizonArtifact(None, None, None, nan, nan, nan, nan),
-            None, None, (None, None, None),
+            None, None, (None, None, None), None,
         )
 
     # Time-ordered 60/20/20 split
@@ -254,7 +258,7 @@ def _train_horizon(
     min_ts = min(ts_arr[i] for i in idx_train)
     art = HorizonArtifact(booster_path, isotonic_path, conformal_path,
                           brier, brier_base, hit_rate, hit_rate_base)
-    return art, scaler, min_ts, (n_train, n_iso, n_conf)
+    return art, scaler, min_ts, (n_train, n_iso, n_conf), meta
 
 
 def _mean_ovr_brier(proba: np.ndarray, y: np.ndarray) -> float:

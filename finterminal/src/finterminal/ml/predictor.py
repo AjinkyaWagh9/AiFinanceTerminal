@@ -239,7 +239,7 @@ def predict(
 
     feature_columns: list[str] = manifest.get("feature_columns", [])
     if not feature_columns:
-        # Derive from dataset ordering when not stored in manifest
+        # Fall back to canonical ordering for pre-polish manifests
         feature_columns = _V1_NAMES + _REGIME_COLS + ["signal_type_id"]
 
     cells: list[dict] = []
