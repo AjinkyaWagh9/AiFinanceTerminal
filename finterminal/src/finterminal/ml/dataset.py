@@ -61,6 +61,7 @@ class MatrixMeta:
     until_ts: datetime
     n_rows: int
     n_dropped_for_missing: int
+    ts_emitted: list[datetime] = field(default_factory=list)  # per-row ts_emitted, same order as X
 
 
 def build_matrix(
@@ -133,13 +134,22 @@ def build_matrix(
     # Ensure until_ts is a datetime for comparison
     if not isinstance(until_ts, datetime):
         until_ts = datetime.fromisoformat(str(until_ts))
+    # Normalise until_ts to naive (strip tzinfo) so comparisons work regardless of
+    # whether DB-stored ts_emitted values are naive or aware.
+    if until_ts.tzinfo is not None:
+        until_ts_naive = until_ts.replace(tzinfo=None)
+    else:
+        until_ts_naive = until_ts
 
     valid_sids = set()
     for sid, info in sig_info.items():
         ts = info["ts_emitted"]
         if isinstance(ts, str):
             ts = datetime.fromisoformat(ts)
-        if ts + cutoff_delta <= until_ts:
+        # Normalise ts to naive for comparison
+        if hasattr(ts, "tzinfo") and ts.tzinfo is not None:
+            ts = ts.replace(tzinfo=None)
+        if ts + cutoff_delta <= until_ts_naive:
             valid_sids.add(sid)
 
     # ------------------------------------------------------------------ #
@@ -212,6 +222,7 @@ def build_matrix(
     n_cols = len(feature_columns)
     X = np.empty((n_rows, n_cols), dtype=np.float64)
     y = np.empty(n_rows, dtype=np.int8)
+    ts_emitted_per_row: list[datetime] = []
 
     for row_i, sid in enumerate(complete_sids):
         feats = wide[sid]
@@ -239,6 +250,12 @@ def build_matrix(
         # Label
         y[row_i] = _LABEL_INT[label_map[sid]]
 
+        # Collect per-row ts_emitted for time-ordered splitting in trainer
+        ts = info["ts_emitted"]
+        if isinstance(ts, str):
+            ts = datetime.fromisoformat(ts)
+        ts_emitted_per_row.append(ts)
+
     meta = MatrixMeta(
         signal_ids=complete_sids,
         feature_columns=feature_columns,
@@ -247,6 +264,7 @@ def build_matrix(
         until_ts=until_ts,
         n_rows=n_rows,
         n_dropped_for_missing=dropped,
+        ts_emitted=ts_emitted_per_row,
     )
     return X, y, meta
 
