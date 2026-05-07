@@ -3,8 +3,32 @@
 ## Layout
 
 - `PLAN.md`, `BACKLOG.md`, `Phase-1-Kickoff.md`, `MODEL-SWAP-GUIDE.md` — design docs
-- `finterminal/` — the actual Python project (see its own `README.md`); pushed to https://github.com/AjinkyaWagh9/Finance-Terminal.git
-- `TerminalVault/` — Obsidian vault. The brain / durable knowledge base of the project. Not pushed to GitHub.
+- `finterminal/` — the Python project (see its own `README.md`). **Now part of this repo as a regular subtree** (was a nested git repo until 2026-05-01).
+- `TerminalVault/` — Obsidian vault. The brain / durable knowledge base of the project. Tracked in this repo.
+
+## Git push rules (READ FIRST EVERY SESSION)
+
+**There is exactly ONE git repo for this project: the parent at `/Users/ajinkyawagh/Desktop/FINTERMINAL/`.** Do NOT treat `finterminal/` as a separate repo — it has no `.git/` of its own anymore.
+
+- **Remote:** `origin` → `https://github.com/AjinkyaWagh9/AiFinanceTerminal.git` *(the unified repo created 2026-05-01)*
+- **Default branch:** `main`
+- **Legacy remote (do NOT push to):** `https://github.com/AjinkyaWagh9/Finance-Terminal.git` is a frozen archive of the pre-absorb python-only history. The full commit log is preserved at `docs/finterminal-pre-absorb-history.txt`. Read-only. Never push, never add as a second remote.
+
+**Branching:**
+- Commit directly to `main` for small fixes, docs, vault updates, and well-tested feature work that's already been reviewed in conversation.
+- Use `feature/<short-kebab-name>` (e.g. `feature/reflexivity-v1`) for in-flight multi-commit work that the user hasn't approved end-to-end. Open a PR back to `main` with `gh pr create` when ready.
+- Never force-push `main`. Never push without the user's explicit say-so for that turn — even if previous turns approved pushes.
+
+**Commit hygiene:**
+- One repo means one commit per logical change — no more "submodule + parent" double-commit dance.
+- Stage files explicitly (`git add path/to/file`) — never `git add .` or `git add -A` (the workspace has untracked transient files like `SystemPrompts/`, `input.md` edits, and local-only vault drafts).
+- Sensitive paths are gitignored: `finterminal/.env`, `finterminal/data/`, `finterminal/logs/`, `finterminal/.worktrees/`, `.venv/`, `.pytest_cache/`, `.ruff_cache/`, all `*.duckdb`. If `git status` ever shows one of these as tracked, stop and fix `.gitignore` before any commit.
+- All commits use the `Co-Authored-By: Claude …` trailer per default Claude Code convention.
+
+**Files NOT to commit without asking:**
+- `.claude/settings.local.json` — local Claude Code config; reflects this user's environment, not project state.
+- `input.md`, `todo.md` — scratch files the user edits between sessions; commit only when the user explicitly says to.
+- `SystemPrompts/` — untracked experimental directory; ask before touching.
 
 ## Vault update protocol (mandatory)
 
