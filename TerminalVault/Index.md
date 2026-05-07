@@ -42,6 +42,8 @@
 | [[02 - Decisions/ADR-016 — DuckDB vss over ChromaDB]] | DuckDB bundled `vss` extension chosen over ChromaDB for news embeddings — no extra dep, SQL join support, in-process |
 | [[02 - Decisions/ADR-017 — Outcomes Ledger as the System's Moat]] | Per-signal outcomes ledger + 5-engine taxonomy — every signal scored against forward returns vs Nifty 50; sub-project #1 |
 | [[02 - Decisions/ADR-018 — Bhavcopy Market Data as Independent Peer Pipeline]] | NSE Bhavcopy pipeline (`market_data/`) is independent peer; MUST NOT import `outcomes/`; enforced by test |
+| [[02 - Decisions/ADR-019 — Feature Store as the Bridge from Signals to Models]] | Long-form `signal_features` table; per-signal feature atomicity; z-score gate; feature drift protection; sub-projects #3–#7 dependency |
+| [[02 - Decisions/ADR-020 — Feature Versioning and Freeze-on-Write for Safe Model Evolution]] | FEATURE_VERSION constant + per-row column; freeze-on-write upsert; ingestion-time snapshot defense; single model touchpoint; reflexivity v1 |
 
 ---
 
@@ -50,7 +52,7 @@
 | Phase | Status | Key milestone |
 |---|---|---|
 | [[03 - Phases/Phase 1 - MVP]] | **Complete** — `/analyze` running live on gpt-5-mini | 5 commands wired; 12 tests pass; bull/bear with sourced citations confirmed on RELIANCE.NS |
-| [[03 - Phases/Phase 2 - Multi-Agent Foundation]] | **In Progress** — 4a SHIPPED; B-2a SHIPPED (173 tests); #1 SHIPPED; #2 SHIPPED; #3 SHIPPED (293 tests); #4 active | Data→Analyst→Critic; news pipeline; trends UI; NSE fallthrough; markup escape; feature store foundation; quality metrics wired |
+| [[03 - Phases/Phase 2 - Multi-Agent Foundation]] | **In Progress** — 4a SHIPPED; B-2a SHIPPED (173 tests); #1 SHIPPED; #2 SHIPPED; #3 SHIPPED (293 tests); #4 SHIPPED (318 tests) | Data→Analyst→Critic; news pipeline; trends UI; NSE fallthrough; markup escape; feature store foundation; quality metrics wired; reflexivity engine |
 | [[03 - Phases/Phase 2.5 - Analyst-Grade]] | Planned | Transcripts, Consensus, Ownership, Quality, Comps, Macro |
 | [[03 - Phases/Phase 3 - US + Routing]] | Planned | LangGraph migration, US tickers, probabilistic bull/bear |
 | [[03 - Phases/Phase 4 - Polish]] | Planned | Reports, alerts, confidence calibration |
@@ -78,6 +80,9 @@
 | [[04 - Code Map/data — news_store]] | `src/finterminal/data/news_store.py` — DuckDB read/write for 3 news tables |
 | [[04 - Code Map/features — compute_quality]] | `src/finterminal/features/compute_quality.py` — 4 quality metrics (roe, leverage, earnings_growth, quality_score) with cross-sectional z-scoring |
 | [[04 - Code Map/data — mgmt_claims]] | `src/finterminal/data/migrations/006_mgmt_claims.sql` + CRUD helpers — outcomes ledger for mgmt claims (v1 structural foundation) |
+| [[04 - Code Map/features — compute_reflexivity]] | `src/finterminal/features/compute_reflexivity.py` — 5 reflexivity computes (sentiment_level, sentiment_delta, entropy_sentiment, entropy_change, feature_health); VADER wrapper; versioning |
+| [[04 - Code Map/features — store (freeze-on-write)]] | `src/finterminal/features/store.py` — version-aware upsert; freeze-on-write semantics; FeatureCell with n_samples/confidence/feature_version |
+| [[04 - Code Map/data — migration 007]] | `src/finterminal/data/migrations/007_reflexivity.sql` — adds n_samples, confidence, feature_version, normalized columns to signal_features |
 
 ---
 
@@ -101,6 +106,7 @@
 | 2026-04-29 | [[05 - Build Log/2026-04-29 — Sprint B-2a News Trend]] — Full news + trend pipeline shipped; DuckDB vss; 7 news modules + NewsTrendAgent + Momentum badge; 123 → 173 tests |
 | 2026-04-29 | [[05 - Build Log/2026-04-29 — Plan Reshape & Sub-Project 1 Spec]] — Planning session: input.md critique absorbed; build plan reshaped into 4 sub-projects; Sub-project #1 (Outcomes Ledger + Engine Taxonomy) fully specced; dual-pipeline architecture locked; no code shipped |
 | 2026-05-01 | [[05 - Build Log/2026-05-01 — Sub-project 3 Quality Engine v1]] — Quality Engine v1 shipped; 4 quality metrics (roe, leverage, earnings_growth, quality_score) wired via compute_quality.py; mgmt_claims ledger (migration 006) foundation for sub-project #6; 266 → 293 tests |
+| 2026-05-01 | [[05 - Build Log/2026-05-01 — Sub-project 4 Reflexivity Engine v1]] — Reflexivity Engine v1 shipped; 5 features (sentiment_level, sentiment_delta, entropy_sentiment, entropy_change, feature_health); feature versioning + freeze-on-write upsert; ingestion-time snapshot defense; VADER wrapper; ADR-020; 293 → 318 tests |
 
 ---
 
